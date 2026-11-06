@@ -1,0 +1,127 @@
+{
+  "project": "octoberblue",
+  "version": "0.1.0",
+  "human_records": false,
+  "assets": [
+    {
+      "id": "D01",
+      "name": "synthetic_task",
+      "origin": "Authored invoice task and expected total",
+      "use": "Task input and task-success check",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/contracts.py",
+          "sha256": "6acc548c4595a0590f82ec6ce7416f1a1efc6f21c134567d61506eb5146870d5"
+        }
+      ]
+    },
+    {
+      "id": "D02",
+      "name": "synthetic_inputs",
+      "origin": "Authored clean and injected inputs",
+      "use": "Demo workload; payloads hashed, never logged",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/cli.py",
+          "sha256": "5ccdb4eec6364c69f3aa769738da9722edda0528a1757c0a05fe489693517cf7"
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "name": "defense_markers",
+      "origin": "Authored guard phrases",
+      "use": "Marker-based guard; frozen per run",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/contracts.py",
+          "sha256": "6acc548c4595a0590f82ec6ce7416f1a1efc6f21c134567d61506eb5146870d5"
+        }
+      ]
+    },
+    {
+      "id": "D04",
+      "name": "run_records",
+      "origin": "Produced by the harness and verifier at runtime",
+      "use": "Events, flags and verdicts; SHA-256 per record",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/engine.py",
+          "sha256": "f8d8d549147f66562e23b9dd4326a18400bd0c0f5006d482aa32d70d9078ccba"
+        },
+        {
+          "path": "src/octoberblue/store.py",
+          "sha256": "6c6d0ed645426d2a8125c8472580901fe447dbd2765339b3f658ebe37afb5936"
+        }
+      ]
+    },
+    {
+      "id": "D05",
+      "name": "memory_versions",
+      "origin": "Proposed against development runs, approved by an operator",
+      "use": "Separate red/blue lessons with parent and evidence links",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/memory.py",
+          "sha256": "606fec3aebaa1d0e0fc0cfb4839c38f09cabfbd9d02e817094cbce8cfd5fa497"
+        }
+      ]
+    },
+    {
+      "id": "D06",
+      "name": "spend_ledger",
+      "origin": "Produced at runtime",
+      "use": "Reservations, settlements and unknown charges; $0.00 default",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/budget.py",
+          "sha256": "128a86797b34d6dff9c4086c30176675deec386fefb4ea3554d6e2eade676080"
+        }
+      ]
+    },
+    {
+      "id": "D07",
+      "name": "source_and_lock",
+      "origin": "Executing source and dependency lock",
+      "use": "Experiment identity",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "pyproject.toml",
+          "sha256": "a3e63738d445d9453fd59357821bcd9cb74b857a370a7b7338fcaece7e77e8ef"
+        },
+        {
+          "path": "uv.lock",
+          "sha256": "096e3d4904905514ea6d66d2f1722d762e4122ee99ca5703c86f6b1951113467"
+        }
+      ]
+    }
+  ],
+  "not_included": [
+    "personal data",
+    "credentials",
+    "external datasets",
+    "model weights",
+    "model outputs"
+  ]
+}
