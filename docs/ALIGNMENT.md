@@ -36,8 +36,8 @@ compliance certificate or a claim of real-model defense quality.
 ## Explicit gaps to resolve without relabeling
 
 1. Invoice and support-ticket benchmarks are both synthetic exercises. The ticket
-   workload now exists, but model-driven classification, a Docker ticket target
-   and authenticated verifier evidence remain unimplemented.
+   workload and optional fixed Docker ticket proposal worker now exist, but
+   model-driven classification and authenticated verifier evidence remain unimplemented.
 2. Development contract schema_version is "1.0"; the older full-stack draft
    proposed "1.0.0". Make an explicit version-migration decision rather than
    silently breaking existing files.

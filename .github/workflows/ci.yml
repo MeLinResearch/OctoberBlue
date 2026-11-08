@@ -146,3 +146,20 @@ jobs:
           assert docker["results"] == inline["results"], (docker, inline)
           print("parity ok: every synthetic case and guard arm matches")
           PY
+
+      - name: Compare all 80 ticket outcomes across inline and Docker runtimes
+        shell: bash
+        run: |
+          uv run octoberblue ticket-benchmark --db .octoberblue/ticket-inline.sqlite3 > ticket-inline.json
+          uv run octoberblue ticket-benchmark --target-runtime docker --db .octoberblue/ticket-docker.sqlite3 > ticket-docker.json
+          uv run python - <<'PYTHON'
+          import json
+          inline = json.load(open("ticket-inline.json", encoding="utf-8"))
+          docker = json.load(open("ticket-docker.json", encoding="utf-8"))
+          assert docker["target_runtime"] == "docker"
+          assert docker["paid_model_calls"] == 0 and docker["budget_ceiling_dollars"] == "0.00"
+          assert len(docker["results"]) == 80
+          assert all(row["verdict"] != "indeterminate" for row in docker["results"])
+          assert docker["results"] == inline["results"]
+          print("ticket parity: 80 real Docker trials match inline; $0.00")
+          PYTHON

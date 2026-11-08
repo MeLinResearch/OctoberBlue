@@ -85,10 +85,17 @@ correct reply, so it cannot be counted as a successful defense.
   Passing `partition="holdout"` is rejected.
 - **No trusted evidence attestation:** the verifier is separate, but the
   parent harness supplies its trace, task oracle and snapshot.
-- **No ticket container target yet:** the earlier opt-in Docker runtime
-  exercises only the invoice toy. The ticket family is currently in-process.
+- **Optional fixed ticket container:** build `docker/target.Dockerfile`, then run
+  `octoberblue ticket-benchmark --target-runtime docker`. The default remains
+  in-process. Only visible synthetic content, ticket/account identifiers,
+  severity/category and a filtered-context flag cross into the worker. Oracle,
+  policy, evidence, budgets and database remain outside it. The host performs
+  initial reads, delivers context, validates proposals through the gateway and
+  invokes the separate verifier. Invalid output, timeout or runtime failure
+  yields `indeterminate` without an inline retry. The Docker restrictions are
+  shared with the invoice toy; this is not reviewed arbitrary-code containment.
 - **No real data:** all tickets, account IDs, messages, and sinks are fictional.
 
-The next boundary is a containerized *ticket target* with an independently
-authenticated evidence service, not an assertion that this toy already
+The next boundary is independently authenticated evidence acquisition and an
+immutable manifest binding the ticket runtime, policy, task and evidence, not an assertion that this toy already
 constitutes safe execution of hostile native code.

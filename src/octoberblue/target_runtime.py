@@ -61,16 +61,24 @@ def propose_in_container(
     timeout: float = 12.0,
 ) -> tuple[tuple[str, dict], ...]:
     """Return proposed calls; never execute a returned tool without the gateway."""
+    return _propose_request(
+        {"protocol": PROTOCOL, "visible_payload": visible_payload,
+         "source_total": source_total, "run_legitimate_task": run_legitimate_task},
+        image=image, timeout=timeout,
+    )
+
+
+def _propose_request(
+    request: dict, *, image: str, timeout: float = 12.0,
+    ticket: bool = False,
+) -> tuple[tuple[str, dict], ...]:
+    """Shared restricted transport; callers select a fixed worker, never target code."""
     if image != _DEFAULT_IMAGE and (
         type(image) is not str or not _DIGEST.fullmatch(image)
     ):
         raise ValueError("use the local tagged image or a pinned sha256 image ID")
-    request = json.dumps({
-        "protocol": PROTOCOL,
-        "visible_payload": visible_payload,
-        "source_total": source_total,
-        "run_legitimate_task": run_legitimate_task,
-    }, allow_nan=False, separators=(",", ":"))
+    protocol = request["protocol"]
+    request = json.dumps(request, allow_nan=False, separators=(",", ":"))
     if len(request.encode("utf-8")) > MAX_REQUEST_BYTES:
         raise TargetRuntimeError("target_input_too_large")
 
@@ -84,7 +92,8 @@ def propose_in_container(
         "--memory=128m", "--memory-swap=128m", "--cpus=0.5",
         "--pids-limit=32", "--ulimit=nofile=64:64",
         "--tmpfs=/tmp:rw,noexec,nosuid,size=8m",
-        image, "python", "-m", "octoberblue.target_worker",
+        image, "python", "-m", ("octoberblue.ticket_target_worker" if ticket
+                                else "octoberblue.target_worker"),
     ]
     try:
         completed = subprocess.run(
@@ -110,10 +119,10 @@ def propose_in_container(
         )
         if type(response) is not dict or set(response) != {"protocol", "proposals"}:
             raise ValueError("invalid target response shape")
-        if response["protocol"] != PROTOCOL:
+        if response["protocol"] != protocol:
             raise ValueError("wrong target protocol")
         proposals = response["proposals"]
-        if type(proposals) is not list or len(proposals) > 3:
+        if type(proposals) is not list or len(proposals) > (6 if ticket else 3):
             raise ValueError("invalid proposal count")
         result = []
         for item in proposals:
