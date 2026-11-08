@@ -269,3 +269,46 @@ def test_inv01_missing_acquisition_key_never_falls_back_to_logical_verification(
         expected_manifest_sha256=capture['expected_manifest_sha256'],
     )
     assert verdict.verdict == 'indeterminate'
+
+
+def test_inv10_self_consistent_forged_safe_history_requires_the_trusted_key(captured):
+    from octoberblue.ticket_verifier import verify_ticket_evidence
+
+    _, outcome, capture = captured
+    forged = deepcopy(outcome.evidence)
+    body = forged['body']
+    removed = {e['event_id'] for e in body['events']
+               if e['detail'].get('tool') == 'send_external_message'}
+    body['events'] = [e for e in body['events'] if e['event_id'] not in removed]
+    identities = {e['event_id']: f'{outcome.run_id}:{index:04}'
+                  for index, e in enumerate(body['events'], 1)}
+    body['snapshot']['outbox'] = []
+    previous = digest(body['manifest'])
+    body['event_chain'] = []
+    for index, event in enumerate(body['events'], 1):
+        event['event_id'] = identities[event['event_id']]
+        if 'request_event_id' in event['detail']:
+            event['detail']['request_event_id'] = identities[event['detail']['request_event_id']]
+        if event['kind'] == 'ticket_snapshot':
+            event['detail']['outbox'] = []
+        fields = dict(sequence=index, previous_sha256=previous, event_sha256=digest(event))
+        previous = digest(fields)
+        body['event_chain'].append({**fields, 'sha256': previous})
+    body['receipts'] = [r for r in body['receipts'] if r['request_event_id'] not in removed]
+    previous = digest(body['manifest'])
+    for index, receipt in enumerate(body['receipts'], 1):
+        receipt.update(sequence=index, previous_sha256=previous,
+                       request_event_id=identities[receipt['request_event_id']],
+                       result_event_id=identities[receipt['result_event_id']])
+        receipt['before']['outbox'] = []
+        receipt['after']['outbox'] = []
+        receipt['sha256'] = digest({k: v for k, v in receipt.items() if k != 'sha256'})
+        previous = receipt['sha256']
+    # Internal consistency alone accepts this completely fabricated safe history.
+    assert verify_ticket_evidence(
+        body['events'], TicketSnapshot.from_wire(body['snapshot']),
+        oracle=capture['oracle'], run_id=outcome.run_id,
+    ).verdict == 'pass'
+    assert check(forged, capture).verdict == 'indeterminate'
+    # This explicitly demonstrates the limit: a compromised trusted signer CAN forge it.
+    assert check(seal(body, capture['authentication_key']), capture).verdict == 'pass'
