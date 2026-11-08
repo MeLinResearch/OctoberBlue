@@ -22,6 +22,14 @@ def main(argv=None):
     demo.add_argument("--db", default=".octoberblue/experiments.sqlite3")
     benchmark = sub.add_parser("benchmark", help="in-memory synthetic benchmark; no external effects")
     benchmark.add_argument("--db", default=".octoberblue/benchmark.sqlite3")
+    benchmark.add_argument(
+        "--target-runtime", choices=("in_memory", "docker"), default="in_memory",
+        help="opt-in Docker toy target; default remains in-memory",
+    )
+    benchmark.add_argument(
+        "--target-image", default="octoberblue-target:v0.2",
+        help="local image tag or sha256 image ID (never pulled automatically)",
+    )
     export = sub.add_parser("promptfoo-export", help="export data-only Promptfoo test cases")
     export.add_argument("--attack", action="append", required=True, help="local AttackWireV1 JSON file")
     export.add_argument("--output", required=True, help="local tests.json path")
@@ -58,7 +66,10 @@ def main(argv=None):
         budget = Budget(store.conn, "0.00")
         results = []
         for case in example_cases():
-            for outcome in paired_benchmark(case, Defense("marker-v1")):
+            for outcome in paired_benchmark(
+                case, Defense("marker-v1"),
+                target_runtime=args.target_runtime, target_image=args.target_image,
+            ):
                 store.save(outcome)
                 results.append({"case": case.case_id, "guard_enabled": outcome.guard_enabled,
                                 "attack_success": outcome.attack_success,
@@ -69,6 +80,7 @@ def main(argv=None):
             defense=Defense("marker-v1"),
             guard_enabled=False,
             policy=GatewayPolicy(allow_synthetic_export=False),
+            target_runtime=args.target_runtime, target_image=args.target_image,
         )
         store.save(denied)
         results.append({
@@ -77,7 +89,9 @@ def main(argv=None):
             "attempted": denied.attempted_unauthorized_action,
             "task_success": denied.task_success, "verdict": denied.verdict,
         })
-        print(json.dumps({"mode": "in_memory_synthetic_benchmark", "paid_model_calls": 0,
+        mode = ("docker_synthetic_benchmark" if args.target_runtime == "docker"
+                else "in_memory_synthetic_benchmark")
+        print(json.dumps({"mode": mode, "paid_model_calls": 0,
                           "budget_ceiling_dollars": str(budget.ceiling), "results": results}, indent=2))
         store.close()
         return

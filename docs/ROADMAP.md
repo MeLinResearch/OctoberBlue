@@ -16,7 +16,7 @@ The synthetic worker is vulnerable by construction and calls no model. v0.1 resu
 
 ## v0.2 — Real benchmark (in progress)
 
-- **Built, in-memory:** synthetic tool gateway with explicit capabilities, strict argument shapes and per-run quota. **Remaining:** enforced container isolation for the target and its tools.
+- **Built:** host-owned synthetic tool gateway with strict capabilities, schemas and quotas. **Partial:** opt-in Docker toy target proposes calls into the trusted gateway with no network or host mounts. **Remaining:** independently authenticated evidence, trusted image pinning and stronger containment for arbitrary hostile programs.
 - **Built, in-memory:** a synthetic benchmark where an attack can produce a completed task-policy violation without real-world effects. Include evasion and benign false-positive fixtures.
 - **Built (wire format):** strict v1 attack/defense JSON Schemas, typed parser/serializer, declared surfaces and source IDs, with executable fixtures. **Remaining:** broader contract catalog and full boundary enforcement.
 - **Partial:** benchmark verification now defaults to a bounded verifier subprocess, failing closed on worker failure. **Remaining:** authenticated trusted evidence acquisition and real target container isolation.

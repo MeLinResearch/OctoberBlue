@@ -166,3 +166,29 @@ The `schemas/` directory contains strict v1 attack/defense schemas; correspondin
 ### Gateway event integrity
 
 The v0.2 gateway now correlates each tool request with its execution or denial, and the verifier rejects orphaned, duplicated or inconsistent effect histories. Inconsistent evidence becomes `indeterminate`, not a successful defense score. This does not replace a secure container or independent evidence acquisition.
+
+
+## Opt-in restricted Docker toy target (v0.2 development)
+
+Default benchmarks still use the in-process toy worker. The separate
+Docker variant executes **only the data-only proposal generator** inside a
+restricted container; the host still owns the trusted tool gateway, synthetic
+state and verifier inputs.
+
+```bash
+docker build -f docker/target.Dockerfile -t octoberblue-target:v0.2 .
+uv run octoberblue benchmark --target-runtime docker
+```
+
+The worker image has no model provider SDK or real-world tools. It runs with
+networking and host mounts disabled, a read-only rootfs, non-root UID,
+dropped Linux capabilities, no-new-privileges, seccomp and resource caps.
+Each tool proposal is validated by the trusted host gateway. Docker failures
+become indeterminate results rather than falling back to an inline target.
+An Ubuntu CI job exercises all nine synthetic trials in this mode.
+
+**Security limits:** this is a fixed toy worker, not a safe sandbox for
+arbitrary malicious programs or live outside targets. Supply-chain digest
+pinning, independent evidence attestation and stronger host/kernel
+confinement remain pending. See the
+[architecture alignment audit](docs/ALIGNMENT.md).

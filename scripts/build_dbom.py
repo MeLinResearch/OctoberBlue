@@ -52,7 +52,7 @@ def main() -> None:
                          "model weights", "model outputs"],
     }
     out = ROOT / "docs/governance/dbom.json"
-    out.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    out.write_bytes((json.dumps(doc, indent=2) + "\n").encode("utf-8"))
     print(f"wrote {out}")
 
 

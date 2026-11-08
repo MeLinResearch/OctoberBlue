@@ -144,3 +144,24 @@ The development-only Promptfoo JSON test-case adapter is documented at [COMPATIB
 ## v0.2 request/effect correlation
 
 The harness now tags each synthetic tool execution or denial with the originating request event ID. The verifier requires a matching one-to-one event chain, consistent tool identity, trusted event origin, valid effect schema and final state equality. Missing, duplicated or orphaned effects are **indeterminate**, never pass. This is input-evidence consistency, not cryptographic proof: the harness still supplies the trace and snapshot and has not been separated from the target process.
+
+
+## v0.2 opt-in target container
+
+In opt-in Docker mode, the toy worker reads a bounded JSON request containing
+only the trusted synthetic task amount and any lower-trust text visible after
+guard filtering. It has no tool permission, verifier, database, holdout or
+gateway credentials. It may only propose tools as bounded JSON output.
+
+The host validates each proposed tool and enforces the capability gateway.
+Real synthetic state changes and the corresponding request/effect event IDs
+remain host-controlled. A separate subprocess verifies the host-owned event
+record and terminal snapshot. Container or transport failures produce
+indeterminate outcomes without an inline retry.
+
+Runtime flags include no networking, no bind mounts, non-root UID, read-only
+root filesystem, capability drops, no-new-privileges, seccomp and resource
+limits. The fixed toy worker and its protocol are suitable for a bounded
+demonstration. They are NOT security-certified isolation for arbitrary
+adversarial code. Authenticated evidence, pinned image digests, host/kernel
+hardening and stronger sandboxing remain future security work.
