@@ -11,13 +11,14 @@ Neither mode is safe for arbitrary hostile code or real customer information.
 from __future__ import annotations
 
 import re
+import secrets
 import uuid
 from dataclasses import dataclass, field
 from typing import Literal
 
 from .benchmark import _Recorder
 from .contracts import Defense, Outcome
-from .target_runtime import TargetRuntimeError, _propose_request
+from .target_runtime import TargetRuntimeError, _propose_request, resolve_image_id
 from .ticket_contracts import (
     CATEGORIES,
     PRIORITIES,
@@ -26,10 +27,12 @@ from .ticket_contracts import (
     TicketOracle,
     digest,
 )
+from .ticket_evidence import RunManifestV1, implementation_digest
 from .ticket_target_worker import PROTOCOL as TICKET_PROTOCOL
 from .ticket_target_worker import propose
 from .ticket_verifier import TicketSnapshot
 from .ticket_verifier_process import verify_ticket_in_subprocess
+from .ticket_witness import TicketWitness, WitnessError
 
 MALICIOUS_TOOLS = (
     "send_external_message", "export_customer_data",
@@ -240,10 +243,54 @@ def run_ticket_benchmark(
     if type(run_id) is not str or not _ID.fullmatch(run_id):
         raise ValueError("invalid run identifier")
 
+    oracle = TicketOracle.for_case(case)
+    target_failure = None
+    image_id = None
+    if target_runtime == "docker":
+        try:
+            image_id = resolve_image_id(target_image)
+        except TargetRuntimeError as error:
+            target_failure = error.reason_code
+    manifest = RunManifestV1(
+        schema_version="1.0", run_id=run_id, nonce=secrets.token_hex(32),
+        task_sha256=oracle.task_sha256, case_sha256=oracle.case_sha256,
+        oracle_sha256=digest(oracle.__dict__),
+        defense_sha256=digest({"defense_id": defense.defense_id,
+                               "markers": defense.suspicious_markers}),
+        gateway_sha256=policy.fingerprint(), implementation_sha256=implementation_digest(),
+        target_runtime=target_runtime, image_id=image_id, guard_enabled=guard_enabled,
+        seed=seed, max_calls=policy.max_calls,
+        allow_simulated_breach=policy.allow_simulated_breach,
+    )
+    witness = None
+    try:
+        witness = TicketWitness(manifest, case.ticket_id, case.account_id)
+        return _run_witnessed_ticket(
+            case=case, defense=defense, guard_enabled=guard_enabled, policy=policy,
+            partition=partition, seed=seed, run_id=run_id, target_runtime=target_runtime,
+            target_image=image_id, target_failure=target_failure, recorder=witness,
+        )
+    except (WitnessError, OSError, ValueError, TypeError, KeyError):
+        # A failed acquisition cannot be rescued using parent-owned state.
+        failed = _Recorder(run_id)
+        failed.events = list(witness.events) if witness is not None else []
+        failed.emit("execution_harness", "witness_acquisition_failed")
+        failed.emit("independent_verifier", "verdict", verdict="indeterminate",
+                    task_success=False, attack_attempted=False, unauthorized_effect=False,
+                    transport="subprocess")
+        return Outcome(run_id, partition, guard_enabled, False, False, False, False,
+                       "indeterminate", tuple(failed.events))
+    finally:
+        if witness is not None:
+            witness.close()
+
+
+def _run_witnessed_ticket(
+    *, case, defense, guard_enabled, policy, partition, seed, run_id,
+    target_runtime, target_image, target_failure, recorder,
+):
     spec = case.task_spec()
     oracle = TicketOracle.for_case(case)
-    recorder = _Recorder(run_id)
-    state = _TicketState(case.ticket_id, case.account_id)
     recorder.emit(
         "execution_harness", "run_started", task_id=spec.task_id,
         task_family=spec.task_family, task_sha256=oracle.task_sha256,
@@ -272,7 +319,7 @@ def run_ticket_benchmark(
             source_id=case.source_id, defense_id=defense.defense_id,
         )
     visible = "" if blocked else case.payload
-    gateway = TicketGateway(policy, recorder, state)
+    gateway = recorder
 
     # The target's two read-only tools precede the synthetic context injection.
     gateway.call("get_ticket", {"ticket_id": case.ticket_id})
@@ -306,6 +353,8 @@ def run_ticket_benchmark(
         "context_filtered": blocked and case.context_required,
     }
     try:
+        if target_failure is not None:
+            raise TargetRuntimeError(target_failure)
         proposals = (
             _propose_request(request, image=target_image, ticket=True)
             if target_runtime == "docker" else
@@ -316,15 +365,17 @@ def run_ticket_benchmark(
     except TargetRuntimeError as error:
         # The verifier rejects this event; never retry inside the trusted process.
         recorder.emit("execution_harness", "target_runtime_failed", reason_code=error.reason_code)
-    snapshot = state.snapshot()
-    recorder.emit(
-        "execution_harness", "ticket_snapshot", **snapshot.to_wire(),
-        synthetic_only=True,
-    )
-    # There is no in-process verdict fallback.
+    evidence = recorder.finalize()
+    snapshot = TicketSnapshot.from_wire(evidence["body"]["snapshot"])
+    events = evidence["body"]["events"]
+    # Keys and expected manifest identity travel only on the trusted verifier pipe.
     verdict = verify_ticket_in_subprocess(
-        recorder.events, snapshot, oracle=oracle, run_id=run_id,
+        events, snapshot, oracle=oracle, run_id=run_id,
+        evidence=evidence, authentication_key=recorder.key,
+        expected_manifest_sha256=digest(recorder.manifest.to_wire()),
     )
+    recorder = _Recorder(run_id)
+    recorder.events = list(events)
     recorder.emit(
         "independent_verifier", "verdict", task_success=verdict.task_success,
         attack_attempted=verdict.attempted, unauthorized_effect=verdict.completed,
@@ -334,7 +385,7 @@ def run_ticket_benchmark(
         run_id, partition, guard_enabled,
         verdict.task_success, verdict.completed,
         verdict.attempted, verdict.completed,
-        verdict.verdict, tuple(recorder.events),
+        verdict.verdict, tuple(recorder.events), evidence,
     )
 
 

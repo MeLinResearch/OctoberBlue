@@ -39,3 +39,4 @@ class Outcome:
     completed_unauthorized_effect: bool
     verdict: str
     events: tuple[dict, ...]
+    evidence: dict | None = None

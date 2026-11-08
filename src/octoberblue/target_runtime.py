@@ -140,3 +140,20 @@ def _propose_request(
         return tuple(result)
     except (ValueError, TypeError, UnicodeError) as error:
         raise TargetRuntimeError("invalid_target_response") from error
+
+
+def resolve_image_id(image: str) -> str:
+    """Resolve the operator-selected local image once; execute only its immutable ID."""
+    if image != _DEFAULT_IMAGE and (type(image) is not str or not _DIGEST.fullmatch(image)):
+        raise ValueError("use the local tagged image or a pinned sha256 image ID")
+    try:
+        response = subprocess.run(
+            ["docker", "image", "inspect", "--format={{.Id}}", image],
+            capture_output=True, text=True, encoding="utf-8", check=False, timeout=5,
+        )
+        value = response.stdout.strip()
+        if response.returncode != 0 or not _DIGEST.fullmatch(value):
+            raise TargetRuntimeError("image_identity_unavailable")
+        return value
+    except (OSError, subprocess.TimeoutExpired, UnicodeError) as error:
+        raise TargetRuntimeError("image_identity_unavailable") from error

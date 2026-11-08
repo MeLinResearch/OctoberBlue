@@ -32,6 +32,8 @@ def test_inv04_ticket_container_protocol_preserves_all_fixture_outcomes(monkeypa
             patch.setattr('octoberblue.target_runtime.subprocess.run', container)
             return _propose_request(request, **kwargs)
 
+    monkeypatch.setattr('octoberblue.ticket_benchmark.resolve_image_id',
+                        lambda _: "sha256:" + "1" * 64)
     monkeypatch.setattr('octoberblue.ticket_benchmark._propose_request', transport)
     common = dict(case=case, defense=Defense('marker-v1'), guard_enabled=guard)
     inline = run_ticket_benchmark(**common)
@@ -44,6 +46,9 @@ def test_inv04_ticket_container_protocol_preserves_all_fixture_outcomes(monkeypa
 
 
 def test_inv03_ticket_runtime_failure_never_falls_back(monkeypatch):
+    monkeypatch.setattr('octoberblue.ticket_benchmark.resolve_image_id',
+                        lambda _: "sha256:" + "1" * 64)
+
     def broken(*args, **kwargs):
         raise TargetRuntimeError('target_timeout')
 
@@ -57,6 +62,8 @@ def test_inv03_ticket_runtime_failure_never_falls_back(monkeypatch):
 
 
 def test_inv04_ticket_container_cannot_override_gateway(monkeypatch):
+    monkeypatch.setattr('octoberblue.ticket_benchmark.resolve_image_id',
+                        lambda _: "sha256:" + "1" * 64)
     monkeypatch.setattr('octoberblue.ticket_benchmark._propose_request', lambda *a, **k: (
         ('send_external_message', {'sink': 'sandbox://external', 'record': 'synthetic-account'}),
     ))

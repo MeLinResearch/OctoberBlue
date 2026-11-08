@@ -24,13 +24,24 @@ This is a proposed integration/research *wedge*, **not a claim of original inven
 
 Avoid implying an AgentDojo *result importer* is an AgentDojo/Inspect *execution adapter*. Likewise, Promptfoo case interchange is not an end-to-end live test integration. LangGraph is a useful target runtime, **not the primary agent-security evaluation standard**.
 
-## Current reality — no inflated milestones
+## Current reality — research-review baseline, no inflated milestones
 
 **Implemented:** offline deterministic invoice and synthetic support-ticket benches, strict tool schema/gateway, request-to-effect lineage, separate-process verifier, 40 authored ticket cases / 80 guard-arm trials, default $0 model spend, experimental Docker isolation for *invoice toy only*, Promptfoo case interchange, AgentDojo result import, CI and docs.
 
 **Not implemented:** a containerized ticket worker, a separate trusted source of effects, independently authenticated/attested evidence, verified live agent tool behavior, native Inspect/AgentDojo runner, adaptive multi-turn adversaries, real dual Dreaming and memory repair, sealed holdouts, preregistration, React operator app, or a peer-reviewed claim.
 
 A file hash proves consistency of the recorded bytes **only**; it does not prove that the source of an event was honest. A separately started verifier process likewise does not prove its inputs originate from trusted execution. Never promote imported model/security scores into OctoberBlue-authoritative findings without independently observable task state.
+
+### Subsequent E1 implementation slice (November 8, 2026)
+
+The fixed ticket proposal worker now supports restricted Docker execution.
+Ticket gateway/state also run in a separate trusted witness subprocess, which
+seals chained events, action receipts and terminal state with ephemeral HMAC.
+The verifier authenticates acquisition against a separately supplied run key
+and immutable manifest digest. Docker ticket runs pin the resolved image ID.
+This advances E1 but does not close it: durable source authentication, portable
+audit replay, full service contracts and reviewed hostile-code containment
+remain open. See [the exact trust scope](TRUSTED_TICKET_EVIDENCE.md).
 
 ## The three experiments to make publication-worthy
 

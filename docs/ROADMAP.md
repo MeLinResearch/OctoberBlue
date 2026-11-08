@@ -67,3 +67,15 @@ The synthetic worker is vulnerable by construction and calls no model. v0.1 resu
 ## Research-alignment priorities (November 8, 2026)
 
 Research update: prioritize **trusted tool-effect witness + authenticated run evidence**, then **Inspect AI / AgentDojo native execution bridge**, followed by matched real-agent baseline comparisons and multi-turn/adaptive + memory-poisoning experiments. These are engineering priorities, **not shipped capabilities**. A generic LangGraph integration is secondary to trusted evidence and reproducible Inspect evaluation. See [the source-backed positioning audit](RESEARCH_DIRECTION_2026-11.md) for acceptance criteria and publication safeguards.
+
+### Implemented ticket witness dependency (November 8, 2026)
+
+Ticket gateway/state now run in a separate trusted witness subprocess. Its
+ordered action receipts and terminal snapshot are authenticated to the verifier
+with an ephemeral run key, independently retained manifest digest and strict
+v1 manifest. Docker ticket execution pins the resolved local image ID. Tampering,
+missing receipts, witness failure and run substitution fail closed; the normal
+benchmark path never falls back to parent-generated state. This advances E1,
+without closing v0.2. Next: durable audit authentication and export/replay, the
+remaining Run/Trace/Guard/Dream contracts, and stronger verifier/target isolation.
+See [key custody and limits](TRUSTED_TICKET_EVIDENCE.md).

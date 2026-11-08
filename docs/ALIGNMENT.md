@@ -23,7 +23,7 @@ compliance certificate or a claim of real-model defense quality.
 | --- | --- | --- |
 | Synthetic benchmark | Built (toy) | Nine offline cases, paired guard arms, synthetic successes, denials, false positives |
 | Host gateway | Built (toy) | Strict tool argument checks, quotas, request-effect correlation |
-| Deterministic verifier | Partial | Separate subprocess, fail-closed event/state checks; no authenticated evidence source |
+| Deterministic verifier | Partial | Separate subprocess; ticket witness acquisition is authenticated with an ephemeral key; durable audit authentication and OS privilege separation remain open |
 | Target runtime | Partial | Optional restrictive Docker toy worker. Default still in-process; no arbitrary-code assurance |
 | Cross-boundary contracts | Partial | Attack/defense + synthetic ticket TaskSpec/case v1; Run/Trace/Guard/Dream schemas still pending |
 | Framework compatibility | Partial | Promptfoo test-case import/export and AgentDojo native result importer, not complete runner integrations |
@@ -37,7 +37,9 @@ compliance certificate or a claim of real-model defense quality.
 
 1. Invoice and support-ticket benchmarks are both synthetic exercises. The ticket
    workload and optional fixed Docker ticket proposal worker now exist, but
-   model-driven classification and authenticated verifier evidence remain unimplemented.
+   model-driven classification and durable audit authentication remain unimplemented.
+   Ticket evidence now comes from a separate state-owning witness with ephemeral
+   authentication; see [the precise trust scope](TRUSTED_TICKET_EVIDENCE.md).
 2. Development contract schema_version is "1.0"; the older full-stack draft
    proposed "1.0.0". Make an explicit version-migration decision rather than
    silently breaking existing files.
