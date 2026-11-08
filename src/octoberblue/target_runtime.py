@@ -14,6 +14,7 @@ import re
 import subprocess
 import uuid
 
+from .process_boundary import ProcessBoundaryError, run_bounded
 from .target_worker import MAX_REQUEST_BYTES, PROTOCOL
 
 MAX_RESPONSE_BYTES = 16_384
@@ -45,8 +46,8 @@ def _cleanup(name: str) -> None:
     # On timeout, the Docker daemon may have retained a running container.
     try:
         subprocess.run(
-            ["docker", "rm", "--force", name], capture_output=True, text=True,
-            encoding="utf-8", timeout=4, check=False,
+            ["docker", "rm", "--force", name], stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=4, check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
         pass
@@ -96,21 +97,21 @@ def _propose_request(
                                 else "octoberblue.target_worker"),
     ]
     try:
-        completed = subprocess.run(
-            command, input=request, capture_output=True, text=True,
-            encoding="utf-8", check=False, timeout=timeout,
-        )
-    except subprocess.TimeoutExpired as error:
+        completed = run_bounded(command, input=request.encode("utf-8"), timeout=timeout,
+                                stdout_limit=MAX_RESPONSE_BYTES, stderr_limit=4096)
+    except ProcessBoundaryError as error:
         _cleanup(name)
-        raise TargetRuntimeError("target_timeout") from error
-    except OSError as error:
-        raise TargetRuntimeError("docker_unavailable") from error
-    except UnicodeError as error:
-        raise TargetRuntimeError("invalid_target_response") from error
-    if completed.returncode != 0:
-        raise TargetRuntimeError("target_nonzero_exit")
-    if len(completed.stdout.encode("utf-8")) > MAX_RESPONSE_BYTES:
+        reason = {"process_timeout": "target_timeout", "stdout_limit": "target_output_too_large",
+                  "stderr_limit": "target_stderr_too_large",
+                  "process_unavailable": "docker_unavailable"}.get(
+                      error.reason_code, "invalid_target_response")
+        raise TargetRuntimeError(reason) from None
+    if len(completed.stdout) > MAX_RESPONSE_BYTES or len(completed.stderr) > 4096:
+        _cleanup(name)
         raise TargetRuntimeError("target_output_too_large")
+    if completed.returncode != 0:
+        _cleanup(name)
+        raise TargetRuntimeError("target_nonzero_exit")
 
     try:
         response = json.loads(
@@ -138,7 +139,7 @@ def _propose_request(
                 raise ValueError("invalid proposed tool")
             result.append((tool, args))
         return tuple(result)
-    except (ValueError, TypeError, UnicodeError) as error:
+    except (ValueError, TypeError, UnicodeError, RecursionError) as error:
         raise TargetRuntimeError("invalid_target_response") from error
 
 
@@ -147,13 +148,13 @@ def resolve_image_id(image: str) -> str:
     if image != _DEFAULT_IMAGE and (type(image) is not str or not _DIGEST.fullmatch(image)):
         raise ValueError("use the local tagged image or a pinned sha256 image ID")
     try:
-        response = subprocess.run(
+        response = run_bounded(
             ["docker", "image", "inspect", "--format={{.Id}}", image],
-            capture_output=True, text=True, encoding="utf-8", check=False, timeout=5,
+            timeout=5, stdout_limit=128, stderr_limit=4096,
         )
-        value = response.stdout.strip()
+        value = response.stdout.decode("utf-8").strip()
         if response.returncode != 0 or not _DIGEST.fullmatch(value):
             raise TargetRuntimeError("image_identity_unavailable")
         return value
-    except (OSError, subprocess.TimeoutExpired, UnicodeError) as error:
+    except (ProcessBoundaryError, UnicodeError) as error:
         raise TargetRuntimeError("image_identity_unavailable") from error

@@ -52,7 +52,7 @@ def test_inv01_ticket_worker_failure_is_indeterminate(monkeypatch):
         raise OSError("process unavailable")
 
     monkeypatch.setattr(
-        "octoberblue.ticket_verifier_process.subprocess.run", absent,
+        "octoberblue.ticket_verifier_process.run_trusted_worker", absent,
     )
     result = verify_ticket_in_subprocess(
         events, snapshot, oracle=TicketOracle.for_case(case),

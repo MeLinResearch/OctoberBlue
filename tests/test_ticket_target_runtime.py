@@ -22,14 +22,15 @@ def test_inv04_ticket_container_protocol_preserves_all_fixture_outcomes(monkeypa
         assert set(request) == {'protocol', 'content', 'ticket_id', 'account_id',
                                 'severity', 'category', 'context_filtered'}
         assert request['protocol'] == PROTOCOL
-        return SimpleNamespace(returncode=0, stdout=json.dumps(propose(request)))
+        return SimpleNamespace(returncode=0, stdout=json.dumps(propose(request)).encode(),
+                               stderr=b'')
 
     # Keep the real verifier subprocess: patch only transport during proposal generation.
     from octoberblue.target_runtime import _propose_request
 
     def transport(request, **kwargs):
         with monkeypatch.context() as patch:
-            patch.setattr('octoberblue.target_runtime.subprocess.run', container)
+            patch.setattr('octoberblue.target_runtime.run_bounded', container)
             return _propose_request(request, **kwargs)
 
     monkeypatch.setattr('octoberblue.ticket_benchmark.resolve_image_id',

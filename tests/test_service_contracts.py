@@ -264,9 +264,9 @@ def test_inv01_uncorrelated_verifier_output_fails_closed(sample, monkeypatch):
         response = service_message('verify_ticket', 'different-request', {
             'task_success': True, 'attempted': False, 'completed': False, 'verdict': 'pass',
         }, response=True)
-        return SimpleNamespace(returncode=0, stdout=json.dumps(response))
+        return SimpleNamespace(returncode=0, stdout=json.dumps(response).encode())
 
-    monkeypatch.setattr('octoberblue.ticket_verifier_process.subprocess.run', substituted)
+    monkeypatch.setattr('octoberblue.ticket_verifier_process.run_trusted_worker', substituted)
     result = verify_ticket_in_subprocess(body['events'], TicketSnapshot.from_wire(body['snapshot']),
                                          oracle=TicketOracle.for_case(case), run_id=outcome.run_id)
     assert result.verdict == 'indeterminate'

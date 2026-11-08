@@ -47,11 +47,12 @@ def decode(raw: bytes) -> object:
 
 def implementation_digest() -> str:
     root = Path(__file__).resolve().parent
-    names = ("ticket_benchmark.py", "ticket_contracts.py", "ticket_evidence.py",
+    names = ("__init__.py", "benchmark.py", "contracts.py", "verifier.py",
+             "ticket_benchmark.py", "ticket_contracts.py", "ticket_evidence.py",
              "ticket_witness.py", "ticket_witness_worker.py", "ticket_verifier.py",
              "ticket_verifier_process.py", "ticket_verifier_worker.py", "target_runtime.py",
              "ticket_target_worker.py", "ticket_audit.py", "ticket_audit_worker.py",
-             "service_contracts.py")
+             "service_contracts.py", "process_boundary.py")
     return digest({n: hashlib.sha256((root / n).read_bytes()).hexdigest() for n in names})
 
 

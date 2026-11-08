@@ -128,7 +128,7 @@ def test_inv01_subprocess_failure_is_indeterminate(monkeypatch):
     def unavailable(*args, **kwargs):
         raise OSError("worker unavailable")
 
-    monkeypatch.setattr(process.subprocess, "run", unavailable)
+    monkeypatch.setattr(process, "run_trusted_worker", unavailable)
     result = verify_in_subprocess(
         [], SandboxSnapshot((), ()), expected_total="125.00", run_id="r",
     )

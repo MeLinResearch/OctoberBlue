@@ -102,3 +102,14 @@ services, not an implementation of Dreaming or future live-agent messages.
 See [compatibility and boundaries](SERVICE_CONTRACTS.md). Next engineering
 dependency: bounded hostile target output and stronger verifier/target execution
 isolation, before enabling provider-backed roles and framework execution.
+
+### Implemented process resource/startup slice (November 8, 2026)
+
+Target proposal output and one-shot verifier/replay pipes now have streaming byte
+caps and deadlines, including stalled input. Docker failures trigger named
+container cleanup. Trusted verifiers use isolated Python startup, private cwd
+and a minimal environment; contradictory legacy verdicts fail closed. This
+advances trusted execution without claiming OS sandbox acceptance. Next:
+persistent witness write deadlines, verifier privilege/network isolation and
+reviewed containment, including Windows job/process-tree guarantees. See
+[process boundaries](PROCESS_BOUNDARIES.md). Provider execution remains disabled.

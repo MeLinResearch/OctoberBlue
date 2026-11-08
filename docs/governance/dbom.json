@@ -117,6 +117,33 @@
       ]
     },
     {
+      "id": "D11",
+      "name": "bounded_process_boundaries",
+      "origin": "Authored bounded I/O and trusted-worker startup",
+      "use": "Finite process streams, deadlines, cleanup and sanitized verifier launch",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/process_boundary.py",
+          "sha256": "9eed5a71eca162bd6e08c0c2251c10ab98c83761e4ef9e6a3ca53e3015bbdcaf"
+        },
+        {
+          "path": "src/octoberblue/target_runtime.py",
+          "sha256": "9c1b2fb07fe02c146700e542a96c342199a2530c148a5be4e28d61cd75b9ee8b"
+        },
+        {
+          "path": "src/octoberblue/verifier_process.py",
+          "sha256": "d1440295e9cbc14ae21105a0fdc0146e0e8623f26eebc161634180dd48e574ed"
+        },
+        {
+          "path": "src/octoberblue/ticket_verifier_process.py",
+          "sha256": "4a2716bf9d8c0f0a5b03b3f51bcafdb65f85658aad2fc2054ed3a3141844387a"
+        }
+      ]
+    },
+    {
       "id": "D10",
       "name": "service_contract_catalog",
       "origin": "Authored service schemas and admission validators",
@@ -178,7 +205,7 @@
       "files": [
         {
           "path": "src/octoberblue/ticket_evidence.py",
-          "sha256": "f8ac4f78ef6051a1f068c5ac642efc0b7590f30af15cdeb722b5530bdc65debd"
+          "sha256": "80c1ef2f6277a8fadd23ef3a17672988936f1fdeea6fea408ac3a8eae7fc96a3"
         },
         {
           "path": "src/octoberblue/ticket_witness.py",
@@ -194,7 +221,7 @@
         },
         {
           "path": "src/octoberblue/ticket_audit.py",
-          "sha256": "b9006af50594650c957b1103fdf2e096c51b39afd838a22862df28bb6e5ffe25"
+          "sha256": "8d2bd3ddc3d9d67512e4b7a3b4b6843d332bde5ef14db25d5161ae57b03aca9c"
         },
         {
           "path": "src/octoberblue/ticket_audit_worker.py",

@@ -144,7 +144,7 @@ def test_inv01_replay_worker_failure_is_unknown(acquisition, monkeypatch):
     def missing(*args, **kwargs):
         raise OSError('missing worker')
 
-    monkeypatch.setattr('octoberblue.ticket_audit.subprocess.run', missing)
+    monkeypatch.setattr('octoberblue.ticket_audit.run_trusted_worker', missing)
     report = replay_in_subprocess(result.audit_pack, trusted_public_key=public,
                                   expected_manifest_sha256=anchor)
     assert report.verification.verdict == 'indeterminate'

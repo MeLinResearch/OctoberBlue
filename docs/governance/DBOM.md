@@ -43,3 +43,10 @@ generator and Run/Trace/Guard/Dream proposal/private-RPC schemas. D07 captures
 the locked development-only JSON Schema validator; the default runtime still
 has no mandatory third-party dependency. No new external dataset, private
 credentials or model output enters these assets.
+
+
+D11 records authored bounded process I/O, target transport and verifier launch
+code. The run source fingerprint includes this boundary and shared trusted core
+modules. Budgets and failure codes are authored configuration; captured stream
+contents are not added to DBOM assets, logs or exception messages. No model SDK,
+provider call or new runtime dependency is introduced.

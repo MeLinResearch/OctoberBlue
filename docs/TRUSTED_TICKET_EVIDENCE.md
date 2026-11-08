@@ -117,6 +117,7 @@ witness and authenticated verifier, against the inline baseline.
 
 Optional signed audit packs and offline replay now exist for this synthetic
 ticket family. Remaining E1 work includes key lifecycle management, the full
-Run/Trace/Guard/Dream contract catalog, bounded streaming for hostile
-target output, verifier OS privilege isolation and containment review. Real-agent
+future live-agent/Dream batch contracts, persistent witness write deadlines,
+verifier OS privilege isolation and containment review. One-shot target and
+verifier pipes are now bounded; see [process boundaries](PROCESS_BOUNDARIES.md). Real-agent
 execution remains gated behind those boundaries and spending controls.

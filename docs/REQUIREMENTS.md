@@ -205,3 +205,25 @@ admission contract, not an epoch/consolidation protocol, regression gate or
 learning verifier. Strong sandboxing, OS privilege separation, all live-agent
 messages and full Dream batch/result/promotion contracts remain future work.
 The default paid-model budget remains $0.00.
+
+## Bounded process transport and sanitized verifier startup (v0.2)
+
+`process_boundary.py` now caps stdout/stderr while reading, enforces an execution
+deadline including input stalls, rejects partial/overflow output and cleans up
+one-shot processes. Fixed Docker proposal workers and image-ID inspection use
+this transport. Invoice/ticket verification and audit replay use a whitelisted
+`python -I -B` module, private temporary working directory and minimal environment.
+The invoice verifier also rejects duplicate and contradictory verdicts.
+
+`tests/test_process_boundary.py` extends partial INV-01/03/10/11/17: exact caps,
+concurrent pipe draining, finite/infinite floods, input stalls, closed output,
+POSIX descendant-held pipes, ambient secret/import injection, named-container
+cleanup and malformed/deep responses fail closed. Existing transport tests now
+mock the bounded runner explicitly; real controlled child processes test its
+resource behavior. Source fingerprints and DBOM cover the boundary implementation.
+
+Overall statuses remain partial: same-user verifiers are not OS privilege/network
+isolation; POSIX sessions and Windows best-effort cleanup are not hostile-code
+containment. Persistent witness write deadlines and containment review remain
+open. See [the exact budgets and limitations](PROCESS_BOUNDARIES.md). No paid
+model calls or real-agent security findings are introduced.

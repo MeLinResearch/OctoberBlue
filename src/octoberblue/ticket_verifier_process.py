@@ -4,8 +4,8 @@ from __future__ import annotations
 import json
 import secrets
 import subprocess
-import sys
 
+from .process_boundary import ProcessBoundaryError, run_trusted_worker
 from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle
 from .ticket_evidence import MAX_PACKET_BYTES, decode
@@ -46,14 +46,12 @@ def verify_ticket_in_subprocess(
                              sort_keys=True, allow_nan=False)
         if len(request.encode("utf-8")) > MAX_REQUEST_BYTES:
             return _indeterminate()
-        response = subprocess.run(
-            [sys.executable, "-m", "octoberblue.ticket_verifier_worker"],
-            input=request, text=True, capture_output=True, encoding="utf-8",
-            check=False, timeout=timeout,
+        response = run_trusted_worker(
+            "octoberblue.ticket_verifier_worker", input=request.encode("utf-8"), timeout=timeout,
         )
         if response.returncode != 0 or len(response.stdout) > 2048:
             return _indeterminate()
-        value = service_payload(decode(response.stdout.encode("utf-8")),
+        value = service_payload(decode(response.stdout),
                                 operation="verify_ticket", request_id=request_id, response=True)
         if type(value) is not dict or set(value) != {
             "task_success", "attempted", "completed", "verdict",
@@ -75,5 +73,6 @@ def verify_ticket_in_subprocess(
         ):
             return _indeterminate()
         return Verification(**value)
-    except (OSError, ValueError, TypeError, UnicodeError, subprocess.TimeoutExpired):
+    except (OSError, ValueError, TypeError, UnicodeError, subprocess.TimeoutExpired,
+            ProcessBoundaryError, RecursionError):
         return _indeterminate()

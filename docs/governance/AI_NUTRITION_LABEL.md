@@ -107,3 +107,9 @@ manual Dream proposal admission now reject malformed or authority-conferring
 messages at active ticket/storage/memory boundaries. This does not authenticate
 legacy records or implement Dreaming. Overall historical control statuses remain
 unchanged; see [the contract scope](../SERVICE_CONTRACTS.md).
+
+**Process-boundary development addendum:** one-shot target/verifier streams now
+have enforced byte budgets and execution deadlines. Verifier startup drops ambient
+credentials/import paths and uses a private cwd. These are resource/startup
+controls, not OS privilege or hostile-code containment. No historical invariant
+status or real-model quality claim is upgraded; see [process limits](../PROCESS_BOUNDARIES.md).
