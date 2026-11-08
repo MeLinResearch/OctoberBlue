@@ -13,7 +13,7 @@ Tests live in [`tests/test_invariants.py`](../tests/test_invariants.py). Each te
 
 ## v0.2 benchmark progress (not yet milestone acceptance)
 
-New `tests/test_benchmark.py` checks executable in-memory synthetic attacks, blocked attacks, evasion, benign false positives, per-run quotas, strict schemas, trusted event/state consistency, paired arms and pinned defense/policy hashes. This extends the **logical** coverage of INV-02, INV-04, INV-05, INV-09, INV-10, INV-12, INV-15, INV-16, and F-04/F-06. INV-11 still requires **actual subprocess/container containment**: in-memory simulation is not a security boundary. INV-01 now has a separately executable verifier with fail-closed input handling, but the default benchmark still calls the in-process verifier and trusted evidence acquisition is pending; v1 attack/defense JSON Schema wire contracts exist, but they are not yet enforced at every service boundary and multi-surface model adapters are not done. The v0.1 test-status table below is retained as a historical baseline rather than being silently reclassified.
+New `tests/test_benchmark.py` checks executable in-memory synthetic attacks, blocked attacks, evasion, benign false positives, per-run quotas, strict schemas, trusted event/state consistency, paired arms and pinned defense/policy hashes. This extends the **logical** coverage of INV-02, INV-04, INV-05, INV-09, INV-10, INV-12, INV-15, INV-16, and F-04/F-06. INV-11 still requires **actual subprocess/container containment**: in-memory simulation is not a security boundary. INV-01 now uses the verifier subprocess by default in the v0.2 benchmark, but trusted evidence acquisition and target process/container containment are still pending; v1 attack/defense JSON Schema wire contracts exist, but they are not yet enforced at every service boundary and multi-surface model adapters are not done. The v0.1 test-status table below is retained as a historical baseline rather than being silently reclassified.
 
 ## Security invariants
 
@@ -80,3 +80,9 @@ INV-18 is single-connection SQLite accounting. It is not safe for concurrent pai
 Today CI runs lint, the invariant tests and the offline demo on Linux, macOS and Windows, and fails if the demo spends anything.
 
 By v0.6 CI must also run contract (schema) validation, integration tests, security tests, deterministic replay and frontend tests. A milestone closes only when its invariants move to **Tested**.
+
+## v0.2 additional tested slices
+
+- `test_inv01_benchmark_uses_subprocess_by_default` proves the active benchmark invokes the verifier process transport.
+- `test_inv01_verifier_failure_fails_closed_without_inprocess_fallback` proves worker failure is never silently upgraded to a pass.
+- Promptfoo-formatted, tagged attack fixtures round-trip through strict admission validation in `tests/test_interop.py`. This is **data interchange, not a third-party scorer or fully supported framework runner**.
