@@ -14,14 +14,14 @@ Each milestone ends with an acceptance gate: every invariant it owns in [REQUIRE
 
 The synthetic worker is vulnerable by construction and calls no model. v0.1 results say nothing about real robustness.
 
-## v0.2 — Real benchmark (next)
+## v0.2 — Real benchmark (in progress)
 
-- Container isolation for the target and its tools; capability-checked gateway with tool schemas, permissions and quotas.
-- A synthetic benchmark where attacks **can** succeed inside the sandbox, so completed effects are observable.
-- Typed, versioned attack and defense artifacts validated by JSON Schema; multiple delivery surfaces.
-- Verifier moved out of the target's process.
-- Defense frozen by configuration hash for each run.
-- Paired red/blue executions on the same task and seed.
+- **Built, in-memory:** synthetic tool gateway with explicit capabilities, strict argument shapes and per-run quota. **Remaining:** enforced container isolation for the target and its tools.
+- **Built, in-memory:** a synthetic benchmark where an attack can produce a completed task-policy violation without real-world effects. Include evasion and benign false-positive fixtures.
+- **Partial:** versioned benchmark cases with two lower-trust surfaces. **Remaining:** typed attack/defense JSON Schemas and validation.
+- **Partial:** independent verifier module comparing event ledger to in-memory snapshot. **Remaining:** separate-process verification and trusted evidence acquisition.
+- **Built:** defense and gateway policy hashes recorded in run metadata.
+- **Built:** paired guard-on/off cases with shared case/seed/policy.
 - Gate: INV-01, INV-02, INV-03, INV-05, INV-09 to INV-12, INV-15; INV-04 re-tested against the new gateway.
 
 ## v0.3 — Live models

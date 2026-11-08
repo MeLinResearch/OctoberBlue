@@ -29,6 +29,21 @@ jobs:
       - name: pytest (invariant checks)
         run: uv run pytest -q
 
+      - name: synthetic benchmark executes measurable outcomes at zero cost
+        shell: bash
+        run: |
+          uv run octoberblue benchmark --db .octoberblue/benchmark-ci.sqlite3 > benchmark.json
+          uv run python - <<'PY'
+          import json
+          r = json.load(open("benchmark.json"))
+          assert r["paid_model_calls"] == 0 and r["budget_ceiling_dollars"] == "0.00", r
+          assert len(r["results"]) == 8, r
+          assert any(x["attack_success"] for x in r["results"]), r
+          assert any(x["attempted"] and not x["attack_success"] for x in r["results"]), r
+          assert any(not x["task_success"] and not x["attack_success"] for x in r["results"]), r
+          print("benchmark ok: 8 in-memory trials, $0.00")
+          PY
+
       - name: offline demo makes zero paid calls
         shell: bash
         run: |

@@ -2,6 +2,8 @@
 
 **Implemented now (v0.1):** offline synthetic harness, in-process gateway, deterministic verdict from events, SQLite run records with integrity hashes, guard-on/off comparison, spend reservations with a $0.00 default, separate red/blue memory with evidence-linked proposals and manual promotion.
 
+**v0.2 in progress:** `benchmark.py` / `verifier.py` demonstrate both successful synthetic task-policy violations and blocked ones in a purely in-memory sandbox; separate process/container isolation is still not implemented.
+
 **Not implemented:** live models, Dreaming, container sandbox, research tools, operator console. The target design is [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); build order is [docs/ROADMAP.md](docs/ROADMAP.md). Don't drop an architecture requirement because v0.1 lacks it.
 
 ## Names

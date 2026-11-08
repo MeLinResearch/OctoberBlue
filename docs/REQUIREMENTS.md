@@ -11,6 +11,10 @@ Every v0.1 check runs in one Python process. A passing test shows the logic is r
 
 Tests live in [`tests/test_invariants.py`](../tests/test_invariants.py). Each test name starts with the invariant it covers.
 
+## v0.2 benchmark progress (not yet milestone acceptance)
+
+New `tests/test_benchmark.py` checks executable in-memory synthetic attacks, blocked attacks, evasion, benign false positives, per-run quotas, strict schemas, trusted event/state consistency, paired arms and pinned defense/policy hashes. This extends the **logical** coverage of INV-02, INV-04, INV-05, INV-09, INV-10, INV-12, INV-15, INV-16, and F-04/F-06. INV-11 still requires **actual subprocess/container containment**: in-memory simulation is not a security boundary. INV-01 still requires verifier process isolation; formal JSON Schema wire contracts and multi-surface model adapters are not done. The v0.1 test-status table below is retained as a historical baseline rather than being silently reclassified.
+
 ## Security invariants
 
 Each invariant must have an automated test before its milestone closes.

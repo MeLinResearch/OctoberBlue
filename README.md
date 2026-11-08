@@ -7,7 +7,7 @@ Red-team results for AI agents are often scored by a model asked whether the att
 **OctoberBlue lets attackers and defenders improve separately, then scores every run from what actually happened: the tool calls made, the state changed, the task completed.**
 
 [![CI](https://github.com/MeLinResearch/OctoberBlue/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MeLinResearch/OctoberBlue/actions/workflows/ci.yml)
-**Python 3.11+** · **MIT** · **v0.1: offline scaffold, no live models**
+**Python 3.11+** · **MIT** · **v0.2 development: in-memory synthetic benchmark, no live models**
 
 <p align="center">
   <img src="docs/assets/octoberblue-glance.svg" alt="At a glance: the red side researches and builds attacks; the blue side researches and runs a guard; a deterministic verifier scores outcomes from evidence; the default model budget is zero dollars with a hard stop." width="100%">
@@ -65,6 +65,32 @@ uv run octoberblue demo
 ```
 
 The demo runs clean and injected inputs with the guard off and on, stores each run in local SQLite with a SHA-256 integrity hash, and prints the results with `"paid_model_calls": 0`.
+
+
+## v0.2 development: measurable synthetic attack outcomes
+
+The new **in-memory benchmark** has a deliberately vulnerable toy target,
+two lower-trust surfaces (\`retrieved_document\` and \`tool_result\`), an
+allowlisted synthetic gateway, quotas, a state snapshot and a separate
+deterministic oracle. It deliberately supports successful *task-policy*
+violations in a local Python list so attack success is no longer structurally
+impossible. This is **not process/container isolation** or evidence about real
+LLM security. It cannot open a URL or export an actual document.
+
+\`\`\`bash
+uv run octoberblue benchmark
+\`\`\`
+
+Its four synthetic cases run with the guard on/off (eight trials):
+clean completion; marker-detected injection; an evasion that retains a
+completed synthetic export; and a benign document that triggers a guard
+false positive and can prevent a legitimate task. The guard and gateway
+are separate: a permitted sandbox capability is not automatically an
+authorized task action. Verifier classifications use the recorded
+synthetic state, not attacker self-reports.
+
+**Status:** v0.2 benchmark slice. Container isolation, remote verifier,
+formal artifact schemas and sealed evaluation remain unimplemented.
 
 ## AI nutrition label
 

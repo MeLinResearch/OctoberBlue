@@ -116,6 +116,10 @@ A modular monolith, not microservices.
 
 Reuse is modular and justified by reading the actual implementations, not by copying packages. None of these replaces the independent verifier.
 
+## v0.2 in-memory benchmark boundary
+
+The `benchmark.py` fixture runner now demonstrates both successful synthetic task-policy violations and defenses that block them. Synthetic exports write only to an in-memory list; they do not access external files or networks. A capability-checked `SyntheticGateway` validates argument shapes and quotas, and `verifier.py` compares the event ledger to a terminal state snapshot. Guard-on/off trials preserve the case, seed, defense and gateway configuration. The verifier is in a separate module, **not a separate process**; untrusted runtime isolation and sealed evaluation are still pending. The original v0.1 `engine.py` remains available for compatibility.
+
 ## v0.1 code map
 
 | Module | What it is |

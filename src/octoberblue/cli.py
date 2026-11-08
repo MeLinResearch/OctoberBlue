@@ -3,6 +3,7 @@
 import argparse
 import json
 
+from .benchmark import example_cases, paired_benchmark
 from .budget import Budget
 from .contracts import Attack, Defense, Task
 from .engine import execute
@@ -14,7 +15,25 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="action", required=True)
     demo = sub.add_parser("demo")
     demo.add_argument("--db", default=".octoberblue/experiments.sqlite3")
+    benchmark = sub.add_parser("benchmark", help="in-memory synthetic benchmark; no external effects")
+    benchmark.add_argument("--db", default=".octoberblue/benchmark.sqlite3")
     args = parser.parse_args(argv)
+    if args.action == "benchmark":
+        store = Store(args.db)
+        budget = Budget(store.conn, "0.00")
+        from .contracts import Defense
+        results = []
+        for case in example_cases():
+            for outcome in paired_benchmark(case, Defense("marker-v1")):
+                store.save(outcome)
+                results.append({"case": case.case_id, "guard_enabled": outcome.guard_enabled,
+                                "attack_success": outcome.attack_success,
+                                "attempted": outcome.attempted_unauthorized_action,
+                                "task_success": outcome.task_success, "verdict": outcome.verdict})
+        print(json.dumps({"mode": "in_memory_synthetic_benchmark", "paid_model_calls": 0,
+                          "budget_ceiling_dollars": str(budget.ceiling), "results": results}, indent=2))
+        store.close()
+        return
     store = Store(args.db)
     budget = Budget(store.conn, "0.00")
     outputs = []

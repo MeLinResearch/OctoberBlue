@@ -83,4 +83,6 @@ Every compliance row names the invariants in [REQUIREMENTS.md](../REQUIREMENTS.m
 
 [Engineering requirements](../REQUIREMENTS.md) · [Data / model card](DATA_MODEL_CARD.md) · [DBOM](DBOM.md) · [Architecture](../ARCHITECTURE.md)
 
+**v0.2 development addendum (November 8, 2026):** A separate in-memory synthetic benchmark now records successful task-policy violations, guard-on/off comparisons, evasion, false positives, and separate deterministic state/event verdicts. These are toy-fixture outcomes, not a security efficacy estimate. The v0.1 artwork and baseline tables above intentionally remain labeled v0.1; they must not be presented as a v0.2 audit or compliance certification.
+
 This is a project label, not a compliance certification.
