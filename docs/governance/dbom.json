@@ -29,7 +29,7 @@
       "files": [
         {
           "path": "src/octoberblue/cli.py",
-          "sha256": "85df9bcc167ec40b606b9f63c4a52ceac4ae773f7668161ad4210c7325d9335d"
+          "sha256": "f0f3bc2430d54ec649a78129449931df0cc02087c5119992eaa8eaee19669572"
         }
       ]
     },
@@ -108,11 +108,38 @@
       "files": [
         {
           "path": "pyproject.toml",
-          "sha256": "a3e63738d445d9453fd59357821bcd9cb74b857a370a7b7338fcaece7e77e8ef"
+          "sha256": "cee1fc7f51e0d79b7e085d7c1e8413a23362a01506c85c0e04dde9754d409264"
         },
         {
           "path": "uv.lock",
           "sha256": "096e3d4904905514ea6d66d2f1722d762e4122ee99ca5703c86f6b1951113467"
+        }
+      ]
+    },
+    {
+      "id": "D08",
+      "name": "synthetic_ticket_fixtures",
+      "origin": "40 wholly authored support-ticket test cases",
+      "use": "Development-only ticket tasks, injections, task contracts and oracle",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/fixtures/tickets.v1.json",
+          "sha256": "7126f106f211f5ba09e80868390ba2f387dd850f54c0bb1c782db524f534ec30"
+        },
+        {
+          "path": "src/octoberblue/ticket_contracts.py",
+          "sha256": "def2a50bbcbc8c9dc593cc9b1fe71789e8112becdeff846e1190e901a28557b3"
+        },
+        {
+          "path": "schemas/ticket-task.v1.json",
+          "sha256": "fd9aaca60944b36efeca9fa03b5584c732a5cd6c137928bb133bba152dbcea32"
+        },
+        {
+          "path": "schemas/ticket-case.v1.json",
+          "sha256": "d062c5898380d627d8c8d3a3c98cc7a21c6e83cad0113da5391a3d1e9ce9eb28"
         }
       ]
     }
