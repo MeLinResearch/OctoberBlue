@@ -101,7 +101,15 @@ def test_inv01_process_verifier_matches_independent_direct_verifier():
     ).verdict == "indeterminate"
 
 
-@pytest.mark.parametrize("invalid", ['{"events": "bad"}', '"hello"', '{"events":[],"run_id":1,"expected_total":"125.00","snapshot":{"totals":[],"outbox":[]}}'])
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        '{"events": "bad"}',
+        '"hello"',
+        '{"events":[],"run_id":1,"expected_total":"125.00",'
+        '"snapshot":{"totals":[],"outbox":[]}}',
+    ],
+)
 def test_inv01_verifier_process_rejects_malformed_envelopes(invalid):
     result = subprocess.run(
         [sys.executable, "-m", "octoberblue.verifier_worker"],
