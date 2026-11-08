@@ -91,3 +91,14 @@ after private-key and database deletion in CI. See
 versioned Run/Trace/Guard/Dream service contracts and boundary enforcement,
 followed by bounded hostile output and stronger verifier/target isolation.
 Key rotation/revocation and sealed research audit packs remain future work.
+
+### Implemented initial service-contract catalog (November 8, 2026)
+
+RunRequest/RunRecord, Trace, GuardDecision and DreamProposal v1 now guard the
+active ticket and manual-memory paths. Witness RPCs are versioned and sequenced;
+verifier/replay envelopes are versioned and correlated. Schema reproducibility
+and real-message validation run in CI. This is the initial catalog for existing
+services, not an implementation of Dreaming or future live-agent messages.
+See [compatibility and boundaries](SERVICE_CONTRACTS.md). Next engineering
+dependency: bounded hostile target output and stronger verifier/target execution
+isolation, before enabling provider-backed roles and framework execution.

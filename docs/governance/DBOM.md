@@ -36,3 +36,10 @@ replay implementation and the audit-pack schema. D07 records the locked optional
 cryptography dependency. No private signing keys or HMAC keys are included in
 DBOM assets, run records or exported packs. Operator key provenance is external;
 signatures do not certify host honesty or dataset/model quality.
+
+
+D10 records the authored service contract validators, deterministic schema
+generator and Run/Trace/Guard/Dream proposal/private-RPC schemas. D07 captures
+the locked development-only JSON Schema validator; the default runtime still
+has no mandatory third-party dependency. No new external dataset, private
+credentials or model output enters these assets.

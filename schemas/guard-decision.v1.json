@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:guard-decision:v1",
+  "title": "guard-decision v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "defense_id",
+    "defense_sha256",
+    "guard_enabled",
+    "source_id",
+    "surface",
+    "payload_sha256",
+    "blocked",
+    "reason_code"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "defense_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "defense_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "guard_enabled": {
+      "type": "boolean"
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:/._-]{0,255}$"
+    },
+    "surface": {
+      "enum": [
+        "ticket_body",
+        "retrieved_knowledge_snippet",
+        "tool_response_body"
+      ]
+    },
+    "payload_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "blocked": {
+      "type": "boolean"
+    },
+    "reason_code": {
+      "enum": [
+        "disabled",
+        "marker_match",
+        "no_match"
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "guard_enabled": {
+          "const": false
+        },
+        "blocked": {
+          "const": false
+        },
+        "reason_code": {
+          "const": "disabled"
+        }
+      }
+    },
+    {
+      "properties": {
+        "guard_enabled": {
+          "const": true
+        },
+        "blocked": {
+          "const": true
+        },
+        "reason_code": {
+          "const": "marker_match"
+        }
+      }
+    },
+    {
+      "properties": {
+        "guard_enabled": {
+          "const": true
+        },
+        "blocked": {
+          "const": false
+        },
+        "reason_code": {
+          "const": "no_match"
+        }
+      }
+    }
+  ]
+}

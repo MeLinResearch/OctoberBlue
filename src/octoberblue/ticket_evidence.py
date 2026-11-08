@@ -50,7 +50,8 @@ def implementation_digest() -> str:
     names = ("ticket_benchmark.py", "ticket_contracts.py", "ticket_evidence.py",
              "ticket_witness.py", "ticket_witness_worker.py", "ticket_verifier.py",
              "ticket_verifier_process.py", "ticket_verifier_worker.py", "target_runtime.py",
-             "ticket_target_worker.py", "ticket_audit.py", "ticket_audit_worker.py")
+             "ticket_target_worker.py", "ticket_audit.py", "ticket_audit_worker.py",
+             "service_contracts.py")
     return digest({n: hashlib.sha256((root / n).read_bytes()).hexdigest() for n in names})
 
 
@@ -180,12 +181,24 @@ def verify_witness_body(
                     or link != {**fields, "sha256": digest(fields)}):
                 return unknown
             previous = link["sha256"]
+        from .service_contracts import GuardDecisionV1, TraceV1
+
+        TraceV1.from_wire({"schema_version": VERSION, "run_id": run_id, "events": events})
         snapshot = TicketSnapshot.from_wire(body["snapshot"])
         verdict = verify_ticket_evidence(events, snapshot, oracle=oracle, run_id=run_id)
         start = events[0]["detail"]
         for name in ("task_sha256", "case_sha256", "defense_sha256", "gateway_sha256",
                      "seed", "target_runtime", "partition"):
             if start.get(name) != getattr(manifest, name):
+                return unknown
+        guard_wire = events[1]["detail"].get("guard_decision")
+        if guard_wire is not None:
+            guard = GuardDecisionV1.from_wire(guard_wire)
+            filters = [e for e in events if e["kind"] == "filter"]
+            if (guard.defense_sha256 != manifest.defense_sha256
+                    or guard.guard_enabled != manifest.guard_enabled
+                    or len(filters) != int(guard.blocked)
+                    or any(e["detail"]["defense_id"] != guard.defense_id for e in filters)):
                 return unknown
         requests = [e for e in events if e["kind"] == "tool_request"]
         results = [e for e in events if e["kind"] in ("tool_executed", "tool_denied")]

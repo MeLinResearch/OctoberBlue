@@ -101,3 +101,9 @@ and manifest anchors. The private key and DB are unnecessary for replay; the
 default core installs no signing dependency. Signer/host honesty remains trusted.
 This does not change historical v0.1 statuses or establish real-model efficacy.
 See [signed audit scope](../TICKET_AUDIT_PACKS.md).
+
+**Service contract development addendum:** initial versioned Run/Trace/Guard and
+manual Dream proposal admission now reject malformed or authority-conferring
+messages at active ticket/storage/memory boundaries. This does not authenticate
+legacy records or implement Dreaming. Overall historical control statuses remain
+unchanged; see [the contract scope](../SERVICE_CONTRACTS.md).

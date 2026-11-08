@@ -8,12 +8,14 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+import secrets
 import stat
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle, digest, load_ticket_cases
 from .ticket_evidence import (
     MAX_PACKET_BYTES,
@@ -234,8 +236,11 @@ def replay_audit_pack(pack: object, *, trusted_public_key: bytes,
 def replay_in_subprocess(pack: object, *, trusted_public_key: bytes,
                          expected_manifest_sha256: str, timeout: float = 5.0) -> AuditReplay:
     try:
-        request = canonical({"pack": pack, "trusted_public_key": trusted_public_key.hex(),
-                             "expected_manifest_sha256": expected_manifest_sha256})
+        request_id = secrets.token_hex(16)
+        request = canonical(service_message("replay_ticket", request_id, {
+            "pack": pack, "trusted_public_key": trusted_public_key.hex(),
+            "expected_manifest_sha256": expected_manifest_sha256,
+        }))
         if len(request) > MAX_PACKET_BYTES:
             return _unknown("audit_pack_size")
         process = subprocess.run(
@@ -244,7 +249,11 @@ def replay_in_subprocess(pack: object, *, trusted_public_key: bytes,
         )
         if process.returncode != 0 or len(process.stdout) > 2048:
             return _unknown("audit_replay_worker_failed")
-        result = decode(process.stdout)
+        result = service_payload(decode(process.stdout), operation="replay_ticket",
+                                 request_id=request_id, response=True)
+        if (result["verdict"] != "indeterminate"
+                and result["manifest_sha256"] != expected_manifest_sha256):
+            return _unknown("audit_replay_worker_failed")
         fields = {"signature_verified", "reason_code", "run_id", "manifest_sha256",
                   "task_success", "attempted", "completed", "verdict"}
         if (type(result) is not dict or set(result) != fields

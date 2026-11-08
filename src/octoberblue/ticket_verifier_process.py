@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import json
+import secrets
 import subprocess
 import sys
 
+from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle
 from .ticket_evidence import MAX_PACKET_BYTES, decode
 from .ticket_verifier import TicketSnapshot
@@ -39,7 +41,9 @@ def verify_ticket_in_subprocess(
             # Compatibility-only logical consistency checks, not authenticated acquisition.
             packet = {"events": events, "snapshot": snapshot.to_wire(),
                       "oracle": oracle.__dict__, "run_id": run_id}
-        request = json.dumps(packet, sort_keys=True, allow_nan=False)
+        request_id = secrets.token_hex(16)
+        request = json.dumps(service_message("verify_ticket", request_id, packet),
+                             sort_keys=True, allow_nan=False)
         if len(request.encode("utf-8")) > MAX_REQUEST_BYTES:
             return _indeterminate()
         response = subprocess.run(
@@ -49,7 +53,8 @@ def verify_ticket_in_subprocess(
         )
         if response.returncode != 0 or len(response.stdout) > 2048:
             return _indeterminate()
-        value = decode(response.stdout.encode("utf-8"))
+        value = service_payload(decode(response.stdout.encode("utf-8")),
+                                operation="verify_ticket", request_id=request_id, response=True)
         if type(value) is not dict or set(value) != {
             "task_success", "attempted", "completed", "verdict",
         }:

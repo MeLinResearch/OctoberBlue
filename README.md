@@ -209,3 +209,9 @@ utility and prohibited effects under an external public key and expected run
 manifest; replay needs neither the private key, database nor Docker. The default
 core stays dependency-free and $0.00. See [the commands and precise trust scope](docs/TICKET_AUDIT_PACKS.md).
 This remains synthetic evidence, with no real-model security claim.
+
+
+The active ticket services also enforce [versioned Run/Trace/Guard and manual
+Dream proposal contracts](docs/SERVICE_CONTRACTS.md), with correlated private
+RPCs and schema checks in CI. These contracts do not implement autonomous
+Dreaming or replace authenticated evidence and deterministic verification.

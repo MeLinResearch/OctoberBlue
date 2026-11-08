@@ -4,6 +4,7 @@ from __future__ import annotations
 import sys
 
 from .benchmark import _Recorder
+from .service_contracts import validate_event, witness_request
 from .ticket_benchmark import TicketGateway, TicketGatewayPolicy, _TicketState
 from .ticket_contracts import digest
 from .ticket_evidence import (
@@ -23,6 +24,8 @@ class ChainedRecorder(_Recorder):
         self.previous = manifest_sha256
 
     def emit(self, origin, kind, **detail):
+        validate_event({"event_id": f"{self.run_id}:{len(self.events) + 1:04}",
+                        "origin": origin, "kind": kind, "detail": detail})
         event_id = super().emit(origin, kind, **detail)
         fields = {"sequence": len(self.events), "previous_sha256": self.previous,
                   "event_sha256": digest(self.events[-1])}
@@ -33,11 +36,10 @@ class ChainedRecorder(_Recorder):
 
 def main() -> int:
     try:
-        initial = decode(sys.stdin.buffer.readline(MAX_PACKET_BYTES + 1))
-        fields = {"operation", "manifest", "key", "ticket_id", "account_id"}
-        if (type(initial) is not dict
-                or set(initial) not in (fields, fields | {"audit_signing_key"})
-                or initial["operation"] != "initialize"):
+        initial = witness_request(
+            decode(sys.stdin.buffer.readline(MAX_PACKET_BYTES + 1)), sequence=1,
+        )
+        if initial["operation"] != "initialize":
             return 2
         manifest = RunManifestV1.from_wire(initial["manifest"])
         if manifest.implementation_sha256 != implementation_digest():
@@ -46,7 +48,7 @@ def main() -> int:
         if len(key) != 32:
             return 2
         signing_key = None
-        if "audit_signing_key" in initial:
+        if initial.get("audit_signing_key") is not None:
             signing_key = bytes.fromhex(initial.pop("audit_signing_key"))
             if len(signing_key) != 32:
                 return 2
@@ -58,12 +60,12 @@ def main() -> int:
         ), recorder, state)
         receipts = []
         previous = anchor
-        _reply({"ready": True})
-        for _ in range(100):
+        _reply({"ready": True}, 1)
+        for sequence in range(2, 101):
             raw = sys.stdin.buffer.readline(MAX_PACKET_BYTES + 1)
             if not raw:
                 return 2
-            command = decode(raw)
+            command = witness_request(decode(raw), sequence=sequence)
             if type(command) is not dict:
                 return 2
             operation = command.get("operation")
@@ -108,18 +110,18 @@ def main() -> int:
                     from .ticket_audit import _sign_witness_body
                     evidence = {"evidence": evidence,
                                 "audit_pack": _sign_witness_body(body, signing_key)}
-                _reply(evidence)
+                _reply(evidence, sequence)
                 return 0  # Sealed exactly once; no further mutations are possible.
             else:
                 return 2
-            _reply({"events": recorder.events[before_index:]})
+            _reply({"events": recorder.events[before_index:]}, sequence)
         return 2
     except (ValueError, TypeError, KeyError, AttributeError, OSError, RecursionError):
         return 2
 
 
-def _reply(value):
-    raw = canonical(value) + b"\n"
+def _reply(value, sequence):
+    raw = canonical({"schema_version": "1.0", "sequence": sequence, "result": value}) + b"\n"
     if len(raw) > MAX_PACKET_BYTES:
         raise ValueError("response size limit")
     sys.stdout.buffer.write(raw)

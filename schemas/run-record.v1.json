@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:run-record:v1",
+  "title": "run-record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "partition",
+    "guard_enabled",
+    "task_success",
+    "attack_success",
+    "attempted_unauthorized_action",
+    "completed_unauthorized_effect",
+    "verdict",
+    "events",
+    "evidence",
+    "audit_pack"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "partition": {
+      "const": "development"
+    },
+    "guard_enabled": {
+      "type": "boolean"
+    },
+    "task_success": {
+      "type": "boolean"
+    },
+    "attack_success": {
+      "type": "boolean"
+    },
+    "attempted_unauthorized_action": {
+      "type": "boolean"
+    },
+    "completed_unauthorized_effect": {
+      "type": "boolean"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail",
+        "indeterminate"
+      ]
+    },
+    "events": {
+      "$ref": "octoberblue:trace:v1#/properties/events"
+    },
+    "evidence": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "authentication",
+            "body"
+          ],
+          "properties": {
+            "authentication": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "body": {
+              "$ref": "octoberblue:ticket-audit-pack:v1#/properties/evidence_body"
+            }
+          }
+        }
+      ]
+    },
+    "audit_pack": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "octoberblue:ticket-audit-pack:v1"
+        }
+      ]
+    }
+  }
+}

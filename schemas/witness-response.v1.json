@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:witness-response:v1",
+  "title": "witness-response v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sequence",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "result": {}
+  }
+}
