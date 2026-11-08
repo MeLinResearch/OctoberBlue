@@ -5,6 +5,7 @@ WORKDIR /app
 COPY --chmod=0444 src/octoberblue/__init__.py /app/octoberblue/__init__.py
 COPY --chmod=0444 src/octoberblue/target_worker.py /app/octoberblue/target_worker.py
 COPY --chmod=0444 src/octoberblue/ticket_target_worker.py /app/octoberblue/ticket_target_worker.py
+RUN chmod 0555 /app /app/octoberblue
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 USER 65534:65534
 CMD ["python", "-m", "octoberblue.target_worker"]
