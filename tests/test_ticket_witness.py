@@ -312,3 +312,21 @@ def test_inv10_self_consistent_forged_safe_history_requires_the_trusted_key(capt
     assert check(forged, capture).verdict == 'indeterminate'
     # This explicitly demonstrates the limit: a compromised trusted signer CAN forge it.
     assert check(seal(body, capture['authentication_key']), capture).verdict == 'pass'
+
+
+def test_inv01_dead_witness_pipe_cleanup_preserves_failure_and_discards_key():
+    from types import SimpleNamespace
+
+    closed = []
+
+    class DeadPipe:
+        def close(self):
+            closed.append(True)
+            raise BrokenPipeError('witness already exited')
+
+    witness = TicketWitness.__new__(TicketWitness)
+    witness.key = b'x' * 32
+    witness.process = SimpleNamespace(poll=lambda: 0, wait=lambda **kwargs: 0,
+                                      stdin=DeadPipe(), stdout=DeadPipe())
+    witness.close()
+    assert len(closed) == 2 and witness.key == b''

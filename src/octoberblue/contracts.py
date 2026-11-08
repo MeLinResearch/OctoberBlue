@@ -40,3 +40,4 @@ class Outcome:
     verdict: str
     events: tuple[dict, ...]
     evidence: dict | None = None
+    audit_pack: dict | None = None

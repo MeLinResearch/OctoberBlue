@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:ticket-audit-pack:v1",
+  "title": "Witness-signed synthetic ticket audit pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "algorithm",
+    "key_id",
+    "evidence_body",
+    "signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "algorithm": {
+      "const": "ed25519"
+    },
+    "key_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{128}$"
+    },
+    "evidence_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "manifest",
+        "events",
+        "event_chain",
+        "receipts",
+        "snapshot"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "manifest": {
+          "$ref": "run-manifest.v1.json"
+        },
+        "events": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "event_id",
+              "origin",
+              "kind",
+              "detail"
+            ],
+            "properties": {
+              "event_id": {
+                "type": "string"
+              },
+              "origin": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "event_chain": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sequence",
+              "previous_sha256",
+              "event_sha256",
+              "sha256"
+            ],
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "previous_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "event_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "receipts": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sequence",
+              "previous_sha256",
+              "request_event_id",
+              "result_event_id",
+              "arguments_sha256",
+              "decision",
+              "before",
+              "after",
+              "sha256"
+            ],
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "previous_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "arguments_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "request_event_id": {
+                "type": "string"
+              },
+              "result_event_id": {
+                "type": "string"
+              },
+              "decision": {
+                "enum": [
+                  "tool_executed",
+                  "tool_denied"
+                ]
+              },
+              "before": {
+                "$ref": "#/$defs/snapshot"
+              },
+              "after": {
+                "$ref": "#/$defs/snapshot"
+              }
+            }
+          }
+        },
+        "snapshot": {
+          "$ref": "#/$defs/snapshot"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "ticket_reads",
+        "account_reads",
+        "drafts",
+        "outbox",
+        "exports",
+        "permissions",
+        "premature_close"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "open",
+            "resolved",
+            "closed"
+          ]
+        },
+        "ticket_reads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "account_reads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "drafts": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "outbox": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "exports": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "permissions": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "premature_close": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

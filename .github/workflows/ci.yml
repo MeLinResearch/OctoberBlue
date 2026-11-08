@@ -21,7 +21,7 @@ jobs:
           python-version: "3.11"
           enable-cache: true
 
-      - run: uv sync --locked --extra dev
+      - run: uv sync --locked --extra dev --extra audit
 
       - name: DBOM reproducibility check
         shell: bash
@@ -33,7 +33,7 @@ jobs:
         run: uv run ruff check .
 
       - name: pytest (invariant checks)
-        run: uv run pytest -q
+        run: uv run --extra audit pytest -q
 
       - name: synthetic benchmark executes measurable outcomes at zero cost
         shell: bash
@@ -113,7 +113,7 @@ jobs:
           python-version: "3.11"
           enable-cache: true
 
-      - run: uv sync --locked --extra dev
+      - run: uv sync --locked --extra dev --extra audit
 
       - name: Build local data-only target image
         run: docker build -f docker/target.Dockerfile -t octoberblue-target:v0.2 .
@@ -175,3 +175,47 @@ jobs:
               assert "authentication_key" not in evidence and "key" not in body
           print("ticket parity: 80 authenticated Docker witness trials match inline; $0.00")
           PYTHON
+
+      - name: Signed Docker evidence survives key and database removal
+        shell: bash
+        run: |
+          mkdir -p .octoberblue/audit
+          uv run --extra audit octoberblue audit-keygen --private-key .octoberblue/audit/private.pem --public-key .octoberblue/audit/public.pem
+          uv run --extra audit octoberblue ticket-benchmark --target-runtime docker --audit-signing-key .octoberblue/audit/private.pem --case support-001 --case support-021 --case support-031 --db .octoberblue/audit/runs.sqlite3 > signed-ticket.json
+          uv run --extra audit python - <<'PY'
+          import json
+          from pathlib import Path
+          from octoberblue.store import Store
+          from octoberblue.ticket_audit import export_pack, load_pack, load_public_key, replay_in_subprocess
+          summary = json.load(open("signed-ticket.json", encoding="utf-8"))
+          assert summary["paid_model_calls"] == 0 and summary["budget_ceiling_dollars"] == "0.00"
+          assert len(summary["audit_runs"]) == 6
+          public = load_public_key(".octoberblue/audit/public.pem")
+          store = Store(".octoberblue/audit/runs.sqlite3")
+          for index, run in enumerate(summary["audit_runs"]):
+              anchor = export_pack(store.get(run["run_id"]), f".octoberblue/audit/pack-{index}.json", trusted_public_key=public)
+              assert anchor == run["manifest_sha256"]
+          store.close()
+          Path(".octoberblue/audit/private.pem").unlink()
+          Path(".octoberblue/audit/runs.sqlite3").unlink()
+          for index, (run, expected) in enumerate(zip(summary["audit_runs"], summary["results"], strict=True)):
+              replay = replay_in_subprocess(load_pack(f".octoberblue/audit/pack-{index}.json"), trusted_public_key=public, expected_manifest_sha256=run["manifest_sha256"])
+              assert replay.signature_verified and replay.reason_code == "replayed", replay
+              assert replay.verification.verdict == expected["verdict"] != "indeterminate", replay
+              assert replay.verification.task_success == expected["task_success"]
+              assert replay.verification.completed == expected["attack_success"]
+          print("six signed Docker acquisitions replay after private-key and database deletion; $0.00")
+          PY
+
+  default-no-audit:
+    name: default offline core / no optional cryptography
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+      - run: uv sync --locked --extra dev
+      - run: uv run python -c "import importlib.util; assert importlib.util.find_spec('cryptography') is None"
+      - run: uv run pytest -q --ignore=tests/test_ticket_audit.py
+      - run: uv run octoberblue demo

@@ -170,3 +170,15 @@ hardening and stronger sandboxing remain future security work.
 ## Support-ticket task family (v0.2 synthetic development)
 
 `ticket_benchmark.py` is a distinct synthetic workload with 40 authored cases spanning three lower-trust surfaces. `TicketTaskSpecV1` fixes allowed ticket/account read and ticket resolution tool contracts; a separate evaluation-only `TicketOracle` specifies expected priority/reply and binds the task/case hashes. `TicketGateway` accepts strict argument shapes and permits *sandbox-only* simulated prohibited effects when explicitly enabled by its policy. It records one result per tool request, hashed source provenance, and a terminal ticket-state snapshot. `ticket_verifier_worker` is a separate subprocess that replays those state effects and checks the independent task oracle. Missing or inconsistent evidence fails closed. This is an additional task family, not a replacement for the invoice compatibility demo. The default ticket target is in-process; opt-in Docker now isolates the fixed post-read proposal worker using the same restricted transport as the invoice toy. The gateway and state now live in a trusted witness subprocess. The parent supplies the oracle separately; the verifier authenticates the witness envelope against a private run key and frozen manifest digest before replay. This is ephemeral acquisition authentication, not durable audit-pack identity or protection from a compromised trusted host. See [trusted ticket evidence](TRUSTED_TICKET_EVIDENCE.md). Full details: [TICKET_BENCHMARK.md](TICKET_BENCHMARK.md).
+
+
+## Optional durable ticket audit evidence
+
+The ticket witness can sign the acquired body with an operator-configured
+Ed25519 key, kept off the target interface. A signed pack persists alongside the
+HMAC acquisition envelope in SQLite. Export accepts an existing witness
+signature; replay authenticates against an independently supplied public key
+and manifest digest, then applies the pinned deterministic verifier and authored
+oracle in a separate process. Signing is an optional dependency, never enabled by
+default. Signer/host honesty is still trusted, and a signature is not an outcome
+oracle. See [the wire format and key custody](TICKET_AUDIT_PACKS.md).

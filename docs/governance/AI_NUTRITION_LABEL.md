@@ -94,3 +94,10 @@ No key is persisted or supplied to the target. The trusted host can still forge
 evidence; durable public-key audit authentication and hostile-code containment
 remain absent. See [the trust scope](../TRUSTED_TICKET_EVIDENCE.md). The historical
 v0.1 control statuses and artwork above are unchanged.
+
+**Signed audit development addendum:** opt-in Ed25519 acquisition signatures and
+offline ticket replay now preserve evidence under external operator public-key
+and manifest anchors. The private key and DB are unnecessary for replay; the
+default core installs no signing dependency. Signer/host honesty remains trusted.
+This does not change historical v0.1 statuses or establish real-model efficacy.
+See [signed audit scope](../TICKET_AUDIT_PACKS.md).

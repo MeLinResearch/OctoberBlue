@@ -199,3 +199,13 @@ confinement remain pending. See the
 `uv run octoberblue ticket-benchmark` now runs 40 authored synthetic support-ticket fixtures in matched guard-on/off conditions (**80 zero-dollar development trials**). The target makes task-specific tool calls, can trigger simulated forbidden effects, and is scored by a separate deterministic verifier process against recorded tool/state evidence. Run results persist in checksum-protected SQLite. No real customer records, network effects, or paid model calls are involved.
 
 Three attack-delivery surfaces and versioned TaskSpec/case JSON Schemas are implemented. The ticket target remains **in-process**; the opt-in Docker target currently applies only to the original invoice toy. See [support-ticket benchmark documentation](docs/TICKET_BENCHMARK.md) for exact scope, commands and limitations.
+
+
+### Signed ticket evidence and offline replay (opt-in development feature)
+
+With the optional `audit` extra and an operator-controlled Ed25519 key, the ticket
+witness signs evidence at acquisition. Export and replay preserve separate task
+utility and prohibited effects under an external public key and expected run
+manifest; replay needs neither the private key, database nor Docker. The default
+core stays dependency-free and $0.00. See [the commands and precise trust scope](docs/TICKET_AUDIT_PACKS.md).
+This remains synthetic evidence, with no real-model security claim.

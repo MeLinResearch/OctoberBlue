@@ -160,3 +160,25 @@ user, the harness/OS remain trusted, ephemeral HMAC is not portable audit-pack
 authentication, inline fixture mode is not containment, and the full contract,
 replay/export and hostile-code requirements remain open. No paid calls or
 real-agent security claims are introduced.
+
+## Opt-in signed ticket audit packs (still partial milestone coverage)
+
+The witness can now sign its acquisition body using an operator-configured
+Ed25519 key. `audit-export` accepts only existing acquisition signatures; it
+cannot sign old rows. `audit-replay` uses an external public key and expected
+manifest digest, refuses source/fixture drift and recomputes deterministic
+security/utility in a separate process without the database or private key.
+`schemas/ticket-audit-pack.v1.json` is versioned and strict at the container
+boundary; it does not replace the remaining Trace/Guard/Dream contracts.
+
+`tests/test_ticket_audit.py` extends partial INV-01/05/09/10/17 and F-06/F-09/F-13:
+key/run substitution, signature tampering, signed incomplete receipts, source and
+oracle mismatch, missing optional cryptography, unsigned export refusal,
+exclusive key/output creation and replay after key/DB removal. CI runs these on
+Linux/macOS/Windows and six signed Docker cases; a separate no-audit job checks
+the dependency-free core. Keys are excluded from packs and stored outcomes.
+
+Overall invariant status counts remain unchanged: signer/host honesty, Windows
+key ACLs and key lifecycle are operator responsibilities; arbitrary hostile code,
+full service contracts and sealed real-agent evaluation remain unsupported.
+See [the durable audit scope](TICKET_AUDIT_PACKS.md). Default budget: $0.00.
