@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Independent deterministic outcome oracle for OctoberBlue's synthetic state.
 
 This is a logically separate module, but not yet a separate trusted process.

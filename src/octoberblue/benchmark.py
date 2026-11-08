@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Executable *synthetic* benchmark. No models, subprocesses, filesystem writes or network.
 
 The gateway permits synthetic-only effects within an in-memory sandbox. A completed

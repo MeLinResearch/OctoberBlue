@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Zero-dollar synthetic demonstration."""
 
 import argparse
@@ -21,7 +22,6 @@ def main(argv=None):
     if args.action == "benchmark":
         store = Store(args.db)
         budget = Budget(store.conn, "0.00")
-        from .contracts import Defense
         results = []
         for case in example_cases():
             for outcome in paired_benchmark(case, Defense("marker-v1")):

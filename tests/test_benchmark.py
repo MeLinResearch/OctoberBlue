@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """v0.2 synthetic benchmark: independently verifiable successes and failures."""
 import dataclasses
 import hashlib
