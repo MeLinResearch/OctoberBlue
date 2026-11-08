@@ -22,6 +22,19 @@ _DIGEST = re.compile(r"sha256:[a-f0-9]{64}\Z")
 _TOOL = re.compile(r"[a-z][a-z0-9_]{0,63}\Z")
 
 
+def _reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict:
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate response key")
+        value[key] = item
+    return value
+
+
+def _reject_constant(_: str) -> None:
+    raise ValueError("invalid JSON constant")
+
+
 class TargetRuntimeError(RuntimeError):
     def __init__(self, reason_code: str):
         self.reason_code = reason_code
@@ -83,13 +96,18 @@ def propose_in_container(
         raise TargetRuntimeError("target_timeout") from error
     except OSError as error:
         raise TargetRuntimeError("docker_unavailable") from error
+    except UnicodeError as error:
+        raise TargetRuntimeError("invalid_target_response") from error
     if completed.returncode != 0:
         raise TargetRuntimeError("target_nonzero_exit")
     if len(completed.stdout.encode("utf-8")) > MAX_RESPONSE_BYTES:
         raise TargetRuntimeError("target_output_too_large")
 
     try:
-        response = json.loads(completed.stdout)
+        response = json.loads(
+            completed.stdout, object_pairs_hook=_reject_duplicate_keys,
+            parse_constant=_reject_constant,
+        )
         if type(response) is not dict or set(response) != {"protocol", "proposals"}:
             raise ValueError("invalid target response shape")
         if response["protocol"] != PROTOCOL:

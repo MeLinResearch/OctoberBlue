@@ -128,3 +128,33 @@ def test_inv03_unpinned_operator_image_rejected():
             visible_payload="", source_total="125.00",
             run_legitimate_task=True, image="malicious:latest",
         )
+
+
+def test_inv04_docker_rejects_duplicate_response_keys(monkeypatch):
+    def response_with_duplicate_keys(command, **kwargs):
+        return SimpleNamespace(
+            returncode=0,
+            stdout='{"protocol":"' + PROTOCOL + '","proposals":[],"proposals":[]}',
+            stderr="",
+        )
+
+    monkeypatch.setattr(
+        "octoberblue.target_runtime.subprocess.run", response_with_duplicate_keys,
+    )
+    with pytest.raises(TargetRuntimeError, match="invalid_target_response"):
+        propose_in_container(
+            visible_payload="", source_total="125.00", run_legitimate_task=False,
+        )
+
+
+def test_inv04_invalid_worker_utf8_is_indeterminate(monkeypatch):
+    def bad_encoding(command, **kwargs):
+        raise UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid byte")
+
+    monkeypatch.setattr(
+        "octoberblue.target_runtime.subprocess.run", bad_encoding,
+    )
+    with pytest.raises(TargetRuntimeError, match="invalid_target_response"):
+        propose_in_container(
+            visible_payload="", source_total="125.00", run_legitimate_task=False,
+        )

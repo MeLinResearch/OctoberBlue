@@ -23,6 +23,12 @@ jobs:
 
       - run: uv sync --locked --extra dev
 
+      - name: DBOM reproducibility check
+        shell: bash
+        run: |
+          uv run python scripts/build_dbom.py
+          git diff --exit-code -- docs/governance/dbom.json
+
       - name: ruff check
         run: uv run ruff check .
 
@@ -91,4 +97,16 @@ jobs:
           assert any(x["attempted"] and not x["attack_success"] for x in r["results"]), r
           assert any(not x["task_success"] for x in r["results"]), r
           print("docker toy target: 9 synthetic trials, $0.00")
+          PY
+
+      - name: Compare inline and Docker toy benchmark outcomes
+        shell: bash
+        run: |
+          uv run octoberblue benchmark --db .octoberblue/inline-parity.sqlite3 > inline-parity.json
+          uv run python - <<'PY'
+          import json
+          docker = json.load(open("docker-benchmark.json", encoding="utf-8"))
+          inline = json.load(open("inline-parity.json", encoding="utf-8"))
+          assert docker["results"] == inline["results"], (docker, inline)
+          print("parity ok: every synthetic case and guard arm matches")
           PY
