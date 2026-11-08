@@ -90,3 +90,7 @@ By v0.6 CI must also run contract (schema) validation, integration tests, securi
 ## AgentDojo interoperability check
 
 `tests/test_agentdojo_adapter.py` checks native-format ingest, separation of externally reported utility/security from the authoritative OctoberBlue verifier, indeterminate handling of incomplete/error records, field redaction, duplicate JSON key rejection, directory bounds and CLI export. This is **not a live agent benchmark or independent proof of the upstream score**.
+
+## Gateway event pairing (v0.2)
+
+`tests/test_gateway_evidence.py` verifies the synthetic gateway records a direct request-event reference for each execution or denial. The deterministic verifier rejects orphan effects, duplicate results, mismatched tools or origins, missing outcomes and reordered/unsupported events as `indeterminate`. This improves consistency of parent-supplied evidence but **does not authenticate the parent process** or secure container execution.
