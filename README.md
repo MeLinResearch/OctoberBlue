@@ -158,3 +158,7 @@ The `schemas/` directory contains strict v1 attack/defense schemas; correspondin
 `octoberblue.verifier_process.verify_in_subprocess` is the **default verifier transport** for the v0.2 benchmark. It starts a bounded verifier worker in a separate Python process and fails closed on invalid input, worker errors and timeouts. The original v0.1 `demo` remains a separate compatibility harness. Neither path has authenticated evidence capture or host/container sandboxing, so process separation is not yet a hostile-code isolation boundary.
 
 [Benchmark interchange documentation](docs/COMPATIBILITY.md) includes working Promptfoo test-case JSON export/import, with planned AgentDojo, PyRIT, garak, LangGraph and trace adapters. These names describe integration targets, not measured framework support.
+
+### AgentDojo task result interoperability
+
+`uv run octoberblue agentdojo-import --input ./runs --output ./observations.jsonl` imports native AgentDojo per-task JSON logs into bounded, redacted observation records with source hashes and explicit external score labels. No API calls or paid models run. It does not yet execute AgentDojo tasks or validate their scores independently. See [compatibility documentation](docs/COMPATIBILITY.md).

@@ -37,3 +37,7 @@ uv run pytest -q
 - Don't claim live-model defense quality from fixture tests.
 - No invented benchmarks, performance numbers or decorative metrics.
 - Don't name or credit outside companies in project docs; refer to "provider adapters" and record exact model IDs in run manifests instead.
+
+## External framework boundary
+
+`agentdojo_adapter.py` imports external run reports as data-only observations. Never promote externally reported utility/security scores to trusted `Outcome` verdicts. Keep framework integration details in `docs/COMPATIBILITY.md`. Upstream runner and oracle integration remain separate work.
