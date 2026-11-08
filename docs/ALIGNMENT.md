@@ -25,7 +25,7 @@ compliance certificate or a claim of real-model defense quality.
 | Host gateway | Built (toy) | Strict tool argument checks, quotas, request-effect correlation |
 | Deterministic verifier | Partial | Separate subprocess; ticket witness acquisition is authenticated with an ephemeral key; optional durable ticket signatures/replay now exist; OS privilege separation and key lifecycle remain open |
 | Target runtime | Partial | Optional restrictive Docker toy worker. Default still in-process; no arbitrary-code assurance |
-| Cross-boundary contracts | Partial | Attack/defense + synthetic ticket TaskSpec/case v1; Run/Trace/Guard/Dream schemas still pending |
+| Cross-boundary contracts | Partial | Attack/defense, ticket TaskSpec/case, run manifest and audit-pack v1; remaining Run/Trace/Guard/Dream service messages pending |
 | Framework compatibility | Partial | Promptfoo test-case import/export and AgentDojo native result importer, not complete runner integrations |
 | Legitimate task | Built (toy) | 40 authored synthetic ticket fixtures, four normal tools, simulated forbidden effects and independent state-based scoring; no live model |
 | Live agents | Planned | Five role definitions exist; no provider-backed research/construction/orchestration |
