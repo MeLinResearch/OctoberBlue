@@ -44,6 +44,23 @@ def _canonical(value):
     return raw
 
 
+def parse_contract_json(raw):
+    """Strict record decoding rejects duplicate keys before typed admission."""
+    if len(raw.encode("utf-8") if type(raw) is str else raw) > MAX_WIRE_BYTES:
+        raise ValueError("service message too large")
+
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate JSON property")
+            result[key] = value
+        return result
+
+    return json.loads(raw, object_pairs_hook=unique,
+                      parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite")))
+
+
 @dataclass(frozen=True)
 class GuardDecisionV1:
     schema_version: str

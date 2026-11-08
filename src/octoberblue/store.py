@@ -47,7 +47,9 @@ class Store:
             raise KeyError(run_id)
         if hashlib.sha256(row[0].encode()).hexdigest() != row[1]:
             raise ValueError("run hash mismatch")
-        value = json.loads(row[0])
+        from .service_contracts import parse_contract_json
+
+        value = parse_contract_json(row[0])
         if "schema_version" in value:
             from .service_contracts import RunRecordV1
             return RunRecordV1.from_wire(value).to_wire()

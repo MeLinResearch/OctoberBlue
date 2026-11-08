@@ -63,7 +63,7 @@
         },
         {
           "path": "src/octoberblue/store.py",
-          "sha256": "edc5dc9e3a8cd1cf5ccb002c2e297d8e3e3fe0a8ed3e8f04cbeb3abf8a9dadbd"
+          "sha256": "a0d9471f70bd1c1b73bfff9b979717d314459d9b638a27a08415f03e15352c64"
         }
       ]
     },
@@ -127,7 +127,7 @@
       "files": [
         {
           "path": "src/octoberblue/service_contracts.py",
-          "sha256": "f92929e9fa4dec039185cb604691a8a94c39d204243d78c61cd48babf04925cf"
+          "sha256": "c519bbfdd299d572d05dea892522e7c6e9405af1c0c8b2a7091fb4775f646812"
         },
         {
           "path": "scripts/build_service_schemas.py",

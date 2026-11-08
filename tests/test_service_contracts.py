@@ -301,3 +301,21 @@ def test_inv09_run_contract_rejects_malformed_receipt_collections(sample):
     record['evidence']['body']['receipts'] = 'not-receipts'
     with pytest.raises(ValueError, match='collections'):
         RunRecordV1.from_wire(record)
+
+
+def test_inv09_store_rejects_duplicate_fields_even_with_a_matching_checksum(sample, tmp_path):
+    import hashlib
+
+    _, outcome, _ = sample
+    store = Store(str(tmp_path / 'duplicates.sqlite3'))
+    try:
+        wire = RunRecordV1.from_outcome(outcome).to_wire()
+        raw = json.dumps(wire)[:-1] + ',"verdict":"fail"}'
+        with store.conn:
+            store.conn.execute('INSERT INTO runs VALUES (?,?,?,?)',
+                               (outcome.run_id, 'development', raw,
+                                hashlib.sha256(raw.encode()).hexdigest()))
+        with pytest.raises(ValueError, match='duplicate'):
+            store.get(outcome.run_id)
+    finally:
+        store.close()
