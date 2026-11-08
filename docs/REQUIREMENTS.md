@@ -94,3 +94,26 @@ By v0.6 CI must also run contract (schema) validation, integration tests, securi
 ## Gateway event pairing (v0.2)
 
 `tests/test_gateway_evidence.py` verifies the synthetic gateway records a direct request-event reference for each execution or denial. The deterministic verifier rejects orphan effects, duplicate results, mismatched tools or origins, missing outcomes and reordered/unsupported events as `indeterminate`. This improves consistency of parent-supplied evidence but **does not authenticate the parent process** or secure container execution.
+
+
+## v0.2 optional restricted Docker target (development)
+
+The opt-in benchmark --target-runtime docker path moves only the deliberately
+vulnerable, fixed synthetic target proposal generator into a separate Docker
+container. The host-owned capability gateway handles every proposed call, and
+the independent verifier checks the host's event/state evidence.
+
+The Docker invocation has no network or host mounts, runs as a non-root user
+with read-only rootfs, drops capabilities, prohibits new privileges and
+restricts process count, CPU, memory and open files. The target image contains
+no model SDK, no real payment tools and no provider credentials. Malformed
+output, a missing Docker daemon, and worker timeout result in an indeterminate
+verdict, not an inline fallback.
+
+Tests in tests/test_target_runtime.py check the invocation and fail-closed
+behavior. Linux Docker CI executes the nine zero-dollar synthetic cases.
+Default benchmark and the legacy demo remain in-process compatibility modes.
+
+**Still partial:** no attestation of the harness's evidence, no guarantee
+against arbitrary malicious native code, no pinned base image digest, no
+independent oracle identity or reviewed Docker daemon isolation.

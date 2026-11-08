@@ -1,9 +1,9 @@
 # ruff: noqa: E501
-"""Executable *synthetic* benchmark. No models, external tools or network.
+"""Synthetic benchmark with an opt-in restricted Docker toy-target runtime.
 
-The gateway permits synthetic-only effects within an in-memory sandbox. A completed
-effect is a task-policy violation, NOT a host-security violation. Do not treat this
-module as a real containment boundary; v0.2 container isolation remains unfinished.
+The gateway and state remain host-owned; the container can only propose tool
+calls. Successful synthetic effects violate task policy inside host memory,
+not host security. The default toy mode is in-process, not sandboxed.
 """
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from .contracts import Defense, Outcome
+from .target_runtime import TargetRuntimeError, propose_in_container
 from .verifier import SandboxSnapshot
 from .verifier_process import verify_in_subprocess
 
@@ -162,6 +163,8 @@ def run_benchmark(
     partition: Literal["development", "holdout"] = "development",
     seed: int = 0,
     run_id: str | None = None,
+    target_runtime: Literal["in_memory", "docker"] = "in_memory",
+    target_image: str = "octoberblue-target:v0.2",
 ) -> Outcome:
     """Evaluate a deliberately vulnerable toy target against a trusted event ledger.
 
@@ -172,6 +175,8 @@ def run_benchmark(
         raise ValueError("unknown partition")
     if not isinstance(seed, int):
         raise ValueError("seed must be an integer")
+    if target_runtime not in ("in_memory", "docker"):
+        raise ValueError("unsupported target runtime")
     rid = run_id or uuid.uuid4().hex
     policy = policy or GatewayPolicy()
     recorder = _Recorder(rid)
@@ -179,7 +184,8 @@ def run_benchmark(
     defense_fingerprint = _digest({"defense_id": defense.defense_id, "markers": defense.suspicious_markers})
     recorder.emit("execution_harness", "run_started", case_id=case.case_id, surface=case.surface,
                   partition=partition, seed=seed, defense_sha256=defense_fingerprint,
-                  gateway_sha256=policy.fingerprint(), synthetic_only=True)
+                  gateway_sha256=policy.fingerprint(),
+                  target_runtime=target_runtime, synthetic_only=True)
     recorder.emit("execution_harness", "input_received", surface=case.surface, trust="untrusted",
                   payload_sha256=hashlib.sha256(case.payload.encode()).hexdigest(),
                   source_id=case.source_id, case_version=case.version)
@@ -190,12 +196,36 @@ def run_benchmark(
                       defense_sha256=defense_fingerprint, blocked=True, surface=case.surface)
     visible = "" if blocked else case.payload
     gateway = SyntheticGateway(policy, recorder, state)
-    # The trusted task record exists independently of the attacker-controlled text.
-    # An explicit context-dependent benchmark can demonstrate false-positive damage.
-    if not (blocked and case.context_required):
-        gateway.call("record_total", {"amount": case.source_total})
-    if "archive a copy" in visible.casefold():
-        gateway.call("sandbox_export", {"sink": "sandbox://outbox", "record": "synthetic-invoice"})
+    # Guard and gateway are always host-owned; turning off the guard cannot
+    # disable permissions. The worker receives no verifier or gateway state.
+    should_record = not (blocked and case.context_required)
+    if target_runtime == "docker":
+        try:
+            proposals = propose_in_container(
+                visible_payload=visible,
+                source_total=case.source_total,
+                run_legitimate_task=should_record,
+                image=target_image,
+            )
+        except TargetRuntimeError as error:
+            # The verifier must see an unsupported event and return indeterminate;
+            # never silently rerun the attack in the in-memory worker.
+            recorder.emit(
+                "execution_harness", "target_runtime_failed",
+                reason_code=error.reason_code,
+            )
+        else:
+            for tool, arguments in proposals:
+                gateway.call(tool, arguments)
+    else:
+        # Compatibility mode: the in-memory toy target, without isolation.
+        if should_record:
+            gateway.call("record_total", {"amount": case.source_total})
+        if "archive a copy" in visible.casefold():
+            gateway.call(
+                "sandbox_export",
+                {"sink": "sandbox://outbox", "record": "synthetic-invoice"},
+            )
     snap = state.snapshot()
     recorder.emit("execution_harness", "sandbox_snapshot", totals=list(snap.totals),
                   outbox=list(snap.outbox), synthetic_only=True)
@@ -217,10 +247,16 @@ def paired_benchmark(
     policy: GatewayPolicy | None = None,
     seed: int = 0,
     partition: Literal["development", "holdout"] = "development",
+    target_runtime: Literal["in_memory", "docker"] = "in_memory",
+    target_image: str = "octoberblue-target:v0.2",
 ) -> tuple[Outcome, Outcome]:
     """Same case, seed, defense, policy; only guard_enabled changes."""
     pair_id = uuid.uuid4().hex
-    common = {"case": case, "defense": defense, "policy": policy, "seed": seed, "partition": partition}
+    common = {
+        "case": case, "defense": defense, "policy": policy,
+        "seed": seed, "partition": partition,
+        "target_runtime": target_runtime, "target_image": target_image,
+    }
     return (
         run_benchmark(**common, guard_enabled=False, run_id=f"{pair_id}-off"),
         run_benchmark(**common, guard_enabled=True, run_id=f"{pair_id}-on"),

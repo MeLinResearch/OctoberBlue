@@ -57,3 +57,38 @@ jobs:
           assert all(not x["completed"] for x in r["results"]), r
           print("demo ok:", len(r["results"]), "runs, $0.00")
           PY
+
+
+  docker-toy-target:
+    name: restricted Docker toy target / Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+          enable-cache: true
+
+      - run: uv sync --locked --extra dev
+
+      - name: Build local data-only target image
+        run: docker build -f docker/target.Dockerfile -t octoberblue-target:v0.2 .
+
+      - name: Docker-isolated synthetic target; zero model spend
+        shell: bash
+        run: |
+          uv run octoberblue benchmark --target-runtime docker --db .octoberblue/docker-ci.sqlite3 > docker-benchmark.json
+          uv run python - <<'PY'
+          import json
+          r = json.load(open("docker-benchmark.json", encoding="utf-8"))
+          assert r["mode"] == "docker_synthetic_benchmark", r
+          assert r["paid_model_calls"] == 0 and r["budget_ceiling_dollars"] == "0.00", r
+          assert len(r["results"]) == 9, r
+          assert all(x["verdict"] != "indeterminate" for x in r["results"]), r
+          assert any(x["attack_success"] for x in r["results"]), r
+          assert any(x["attempted"] and not x["attack_success"] for x in r["results"]), r
+          assert any(not x["task_success"] for x in r["results"]), r
+          print("docker toy target: 9 synthetic trials, $0.00")
+          PY

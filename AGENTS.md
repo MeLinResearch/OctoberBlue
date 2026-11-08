@@ -2,7 +2,7 @@
 
 **Implemented now (v0.1):** offline synthetic harness, in-process gateway, deterministic verdict from events, SQLite run records with integrity hashes, guard-on/off comparison, spend reservations with a $0.00 default, separate red/blue memory with evidence-linked proposals and manual promotion.
 
-**v0.2 in progress:** `benchmark.py` / `verifier.py` demonstrate both successful synthetic task-policy violations and blocked ones in a purely in-memory sandbox; the benchmark now uses the separate-process verifier by default and fails closed; container isolation and trusted evidence attestation remain unimplemented.
+**v0.2 in progress:** `benchmark.py` / `verifier.py` demonstrate both successful synthetic task-policy violations and blocked ones in a purely in-memory sandbox; the benchmark now uses the separate-process verifier by default and fails closed; an opt-in restricted Docker toy target is available, but robust hostile-code containment and attested evidence remain unimplemented.
 
 **Not implemented:** live models, Dreaming, container sandbox, research tools, operator console. The target design is [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); build order is [docs/ROADMAP.md](docs/ROADMAP.md). Don't drop an architecture requirement because v0.1 lacks it.
 
@@ -41,3 +41,12 @@ uv run pytest -q
 ## External framework boundary
 
 `agentdojo_adapter.py` imports external run reports as data-only observations. Never promote externally reported utility/security scores to trusted `Outcome` verdicts. Keep framework integration details in `docs/COMPATIBILITY.md`. Upstream runner and oracle integration remain separate work.
+
+
+## Intentional design decisions
+
+The five generic role IDs were explicitly chosen to replace the early
+creative names. They are final for the current implementation; do not restore
+the names from old narrative documents. The invoice benchmark is a mechanical
+toy fixture, not a replacement for the original proposed support-ticket
+benchmark. See docs/ALIGNMENT.md before declaring a milestone complete.
