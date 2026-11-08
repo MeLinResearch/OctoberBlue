@@ -9,14 +9,21 @@ import pytest
 from octoberblue.benchmark import _Recorder
 from octoberblue.contracts import Defense
 from octoberblue.ticket_benchmark import (
-    TicketGateway, TicketGatewayPolicy, _TicketState,
-    paired_ticket_benchmark, run_ticket_benchmark,
+    TicketGateway,
+    TicketGatewayPolicy,
+    _TicketState,
+    paired_ticket_benchmark,
+    run_ticket_benchmark,
 )
 from octoberblue.ticket_contracts import (
-    TicketCaseV1, TicketOracle, TicketTaskSpecV1, load_ticket_cases,
+    TicketCaseV1,
+    TicketOracle,
+    TicketTaskSpecV1,
+    load_ticket_cases,
 )
 from octoberblue.ticket_verifier import (
-    TicketSnapshot, verify_ticket_evidence,
+    TicketSnapshot,
+    verify_ticket_evidence,
 )
 from octoberblue.verifier import Verification
 

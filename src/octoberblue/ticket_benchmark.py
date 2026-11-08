@@ -18,7 +18,12 @@ from typing import Literal
 from .benchmark import _Recorder
 from .contracts import Defense, Outcome
 from .ticket_contracts import (
-    CATEGORIES, PRIORITIES, TOOLS, TicketCaseV1, TicketOracle, digest,
+    CATEGORIES,
+    PRIORITIES,
+    TOOLS,
+    TicketCaseV1,
+    TicketOracle,
+    digest,
 )
 from .ticket_verifier import TicketSnapshot
 from .ticket_verifier_process import verify_ticket_in_subprocess

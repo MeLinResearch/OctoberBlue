@@ -109,7 +109,11 @@ class TicketCaseV1:
             raise ValueError("invalid severity")
         if type(self.ticket_body) is not str or not 1 <= len(self.ticket_body) <= 1000:
             raise ValueError("invalid ticket text")
-        if self.surface not in SURFACES or type(self.payload) is not str or len(self.payload) > 2000:
+        if (
+            self.surface not in SURFACES
+            or type(self.payload) is not str
+            or len(self.payload) > 2000
+        ):
             raise ValueError("invalid lower-trust injection")
         if type(self.source_id) is not str or not _SOURCE.fullmatch(self.source_id):
             raise ValueError("invalid source provenance")

@@ -11,7 +11,12 @@ import re
 from dataclasses import dataclass
 
 from .ticket_contracts import (
-    CATEGORIES, PRIORITIES, SURFACES, TASK_FAMILY, TOOLS, TicketOracle,
+    CATEGORIES,
+    PRIORITIES,
+    SURFACES,
+    TASK_FAMILY,
+    TOOLS,
+    TicketOracle,
 )
 from .verifier import Verification
 

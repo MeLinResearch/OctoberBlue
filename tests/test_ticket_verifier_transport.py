@@ -1,5 +1,4 @@
 """Adversarial transport tests for the ticket verifier worker."""
-import json
 import subprocess
 import sys
 
