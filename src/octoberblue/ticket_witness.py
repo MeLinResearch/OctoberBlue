@@ -118,5 +118,10 @@ class TicketWitness:
                 self.process.wait(timeout=2)
             for pipe in (self.process.stdin, self.process.stdout):
                 if pipe is not None:
-                    pipe.close()
+                    try:
+                        pipe.close()
+                    except OSError:
+                        # Closing buffered stdin may flush into an already dead
+                        # witness. Cleanup must preserve the indeterminate result.
+                        pass
         self.key = b""
