@@ -15,7 +15,13 @@ class WitnessError(RuntimeError):
 
 
 class TicketWitness:
-    def __init__(self, manifest: RunManifestV1, ticket_id: str, account_id: str):
+    def __init__(self, manifest: RunManifestV1, ticket_id: str, account_id: str,
+                 *, audit_signing_key: bytes | None = None):
+        self.audit_pack = None
+        self.audit_public_key = None
+        if audit_signing_key is not None:
+            from .ticket_audit import public_bytes
+            self.audit_public_key = public_bytes(audit_signing_key)
         self.events = []
         self.key = secrets.token_bytes(32)
         self.manifest = manifest
@@ -29,9 +35,11 @@ class TicketWitness:
                 bufsize=-1,
             )
             threading.Thread(target=self._read, daemon=True).start()
-            response = self._rpc({"operation": "initialize", "manifest": manifest.to_wire(),
-                                  "key": self.key.hex(), "ticket_id": ticket_id,
-                                  "account_id": account_id})
+            initial = {"operation": "initialize", "manifest": manifest.to_wire(),
+                       "key": self.key.hex(), "ticket_id": ticket_id, "account_id": account_id}
+            if audit_signing_key is not None:
+                initial["audit_signing_key"] = audit_signing_key.hex()
+            response = self._rpc(initial)
             if response != {"ready": True}:
                 raise WitnessError("witness_initialization_failed")
         except (OSError, WitnessError):
@@ -83,6 +91,20 @@ class TicketWitness:
     def finalize(self):
         evidence = self._rpc({"operation": "finalize"})
         self.sealed = True
+        if self.audit_public_key is not None:
+            from .ticket_audit import AuditError, authenticate_pack
+            from .ticket_contracts import digest
+            try:
+                if type(evidence) is not dict or set(evidence) != {"evidence", "audit_pack"}:
+                    raise WitnessError("missing_acquisition_signature")
+                body = authenticate_pack(evidence["audit_pack"], self.audit_public_key,
+                                         digest(self.manifest.to_wire()))
+                if body != evidence["evidence"]["body"]:
+                    raise WitnessError("acquisition_signature_mismatch")
+                self.audit_pack = evidence["audit_pack"]
+                evidence = evidence["evidence"]
+            except (AuditError, KeyError, TypeError):
+                raise WitnessError("invalid_acquisition_signature") from None
         return evidence
 
     def close(self):

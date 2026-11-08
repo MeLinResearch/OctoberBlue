@@ -90,8 +90,10 @@ Keys are discarded when acquisition closes. The persisted envelope supports
 content-integrity inspection and deterministic replay, but **does not provide
 portable public-key verification or durable independent source authentication**
 after the ephemeral key is gone. Do not treat an exported key supplied alongside
-an envelope as proof of origin. Durable signed audit packs and externally
-anchored trust identities remain future work. SQLite insert-only run IDs prevent
+an envelope as proof of origin. Opt-in acquisition-time Ed25519 signatures now support durable audit packs
+against an externally supplied operator public key; see
+[signed packs and offline replay](TICKET_AUDIT_PACKS.md). HMAC-only historical
+records do not gain that guarantee. SQLite insert-only run IDs prevent
 normal API overwrites; a database administrator remains trusted.
 
 ## Failure behavior and verification
@@ -113,7 +115,8 @@ different. This is replay of fixture behavior, not a finished audit-pack replay
 command. Existing Linux Docker CI exercises all 80 case/guard arms through the
 witness and authenticated verifier, against the inline baseline.
 
-Remaining E1 work includes durable audit authentication, the full Run/Trace/Guard/
-Dream contract catalog, exported replay tooling, bounded streaming for hostile
+Optional signed audit packs and offline replay now exist for this synthetic
+ticket family. Remaining E1 work includes key lifecycle management, the full
+Run/Trace/Guard/Dream contract catalog, bounded streaming for hostile
 target output, verifier OS privilege isolation and containment review. Real-agent
 execution remains gated behind those boundaries and spending controls.

@@ -34,9 +34,10 @@ class ChainedRecorder(_Recorder):
 def main() -> int:
     try:
         initial = decode(sys.stdin.buffer.readline(MAX_PACKET_BYTES + 1))
-        if type(initial) is not dict or set(initial) != {
-            "operation", "manifest", "key", "ticket_id", "account_id",
-        } or initial["operation"] != "initialize":
+        fields = {"operation", "manifest", "key", "ticket_id", "account_id"}
+        if (type(initial) is not dict
+                or set(initial) not in (fields, fields | {"audit_signing_key"})
+                or initial["operation"] != "initialize"):
             return 2
         manifest = RunManifestV1.from_wire(initial["manifest"])
         if manifest.implementation_sha256 != implementation_digest():
@@ -44,6 +45,11 @@ def main() -> int:
         key = bytes.fromhex(initial["key"])
         if len(key) != 32:
             return 2
+        signing_key = None
+        if "audit_signing_key" in initial:
+            signing_key = bytes.fromhex(initial.pop("audit_signing_key"))
+            if len(signing_key) != 32:
+                return 2
         anchor = digest(manifest.to_wire())
         recorder = ChainedRecorder(manifest.run_id, anchor)
         state = _TicketState(initial["ticket_id"], initial["account_id"])
@@ -97,7 +103,12 @@ def main() -> int:
                 body = {"schema_version": "1.0", "manifest": manifest.to_wire(),
                         "events": recorder.events, "event_chain": recorder.chain,
                         "receipts": receipts, "snapshot": snapshot}
-                _reply(seal(body, key))
+                evidence = seal(body, key)
+                if signing_key is not None:
+                    from .ticket_audit import _sign_witness_body
+                    evidence = {"evidence": evidence,
+                                "audit_pack": _sign_witness_body(body, signing_key)}
+                _reply(evidence)
                 return 0  # Sealed exactly once; no further mutations are possible.
             else:
                 return 2

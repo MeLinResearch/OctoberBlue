@@ -79,3 +79,15 @@ benchmark path never falls back to parent-generated state. This advances E1,
 without closing v0.2. Next: durable audit authentication and export/replay, the
 remaining Run/Trace/Guard/Dream contracts, and stronger verifier/target isolation.
 See [key custody and limits](TRUSTED_TICKET_EVIDENCE.md).
+
+### Implemented durable ticket audit slice (November 8, 2026)
+
+Optional acquisition-time Ed25519 signatures, existing-signature-only export and
+standalone offline replay now preserve the synthetic ticket witness evidence
+beyond ephemeral HMAC key disposal. External public-key and manifest anchors are
+required; source/fixture drift fails closed. Six signed Docker conditions replay
+after private-key and database deletion in CI. See
+[signed audit packs](TICKET_AUDIT_PACKS.md). Next dependency: the remaining
+versioned Run/Trace/Guard/Dream service contracts and boundary enforcement,
+followed by bounded hostile output and stronger verifier/target isolation.
+Key rotation/revocation and sealed research audit packs remain future work.

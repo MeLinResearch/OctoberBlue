@@ -29,3 +29,10 @@ Runtime evidence contains hashes, synthetic before/after state and an ephemeral
 HMAC tag. Keys and raw proposal arguments are excluded from persisted evidence.
 No new external dataset, real customer data or model output is introduced.
 The envelope is not a portable source-authentication proof after key disposal.
+
+
+D09 now also covers optional acquisition-time ticket audit signatures, offline
+replay implementation and the audit-pack schema. D07 records the locked optional
+cryptography dependency. No private signing keys or HMAC keys are included in
+DBOM assets, run records or exported packs. Operator key provenance is external;
+signatures do not certify host honesty or dataset/model quality.

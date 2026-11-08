@@ -88,7 +88,9 @@ correct reply, so it cannot be counted as a successful defense.
   and the verifier authenticates them with a run key and manifest digest supplied
   separately by the harness. Keys never reach the target or persisted evidence.
   This is not hardware attestation, protection from a compromised harness, or
-  durable public-key audit verification. See [the evidence boundary](TRUSTED_TICKET_EVIDENCE.md).
+  independent protection from a compromised signer. Optional acquisition-time
+  Ed25519 signatures and offline replay now support durable verification against
+  external operator keys; see [signed audit packs](TICKET_AUDIT_PACKS.md). See [the evidence boundary](TRUSTED_TICKET_EVIDENCE.md).
 - **Optional fixed ticket container:** build `docker/target.Dockerfile`, then run
   `octoberblue ticket-benchmark --target-runtime docker`. The default remains
   in-process. Only visible synthetic content, ticket/account identifiers,
@@ -100,6 +102,6 @@ correct reply, so it cannot be counted as a successful defense.
   shared with the invoice toy; this is not reviewed arbitrary-code containment.
 - **No real data:** all tickets, account IDs, messages, and sinks are fictional.
 
-The next boundaries are durable audit authentication, exported replay and the
-remaining versioned service contracts, not an assertion that this toy already
+The next boundaries are the remaining versioned service contracts, key
+lifecycle management and stronger isolation, not an assertion that this toy already
 constitutes safe execution of hostile native code.

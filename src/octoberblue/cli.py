@@ -42,6 +42,19 @@ def main(argv=None):
     )
     tickets.add_argument("--target-runtime", choices=("in_memory", "docker"), default="in_memory")
     tickets.add_argument("--target-image", default="octoberblue-target:v0.2")
+    tickets.add_argument("--audit-signing-key", help="opt-in local Ed25519 private key file; requires audit extra")
+    keygen = sub.add_parser("audit-keygen", help="create an operator-controlled audit signing identity")
+    keygen.add_argument("--private-key", required=True)
+    keygen.add_argument("--public-key", required=True)
+    audit_export = sub.add_parser("audit-export", help="export an already witness-signed acquisition")
+    audit_export.add_argument("--db", required=True)
+    audit_export.add_argument("--run-id", required=True)
+    audit_export.add_argument("--trusted-public-key", required=True)
+    audit_export.add_argument("--output", required=True)
+    replay = sub.add_parser("audit-replay", help="authenticate and replay a signed ticket pack offline")
+    replay.add_argument("--input", required=True)
+    replay.add_argument("--trusted-public-key", required=True)
+    replay.add_argument("--expected-manifest-sha256", required=True)
     export = sub.add_parser("promptfoo-export", help="export data-only Promptfoo test cases")
     export.add_argument("--attack", action="append", required=True, help="local AttackWireV1 JSON file")
     export.add_argument("--output", required=True, help="local tests.json path")
@@ -52,7 +65,50 @@ def main(argv=None):
     dojo.add_argument("--input", required=True, help="local JSON file or log directory")
     dojo.add_argument("--output", required=True, help="redacted JSONL observations")
     args = parser.parse_args(argv)
+    if args.action in ("audit-keygen", "audit-export", "audit-replay"):
+        from .ticket_audit import (
+            AuditError,
+            export_pack,
+            generate_keypair,
+            load_pack,
+            load_public_key,
+            replay_in_subprocess,
+        )
+        try:
+            if args.action == "audit-keygen":
+                identity = generate_keypair(args.private_key, args.public_key)
+                print(json.dumps({"key_id": identity, "algorithm": "ed25519", "paid_model_calls": 0}))
+                return 0
+            public_key = load_public_key(args.trusted_public_key)
+            if args.action == "audit-replay":
+                report = replay_in_subprocess(
+                    load_pack(args.input), trusted_public_key=public_key,
+                    expected_manifest_sha256=args.expected_manifest_sha256,
+                )
+                print(json.dumps({**report.to_wire(), "paid_model_calls": 0}, indent=2))
+                return {"pass": 0, "fail": 1, "indeterminate": 2}[report.verification.verdict]
+            if not Path(args.db).is_file():
+                raise AuditError("audit_database_unavailable")
+            store = Store(args.db)
+            try:
+                anchor = export_pack(store.get(args.run_id), args.output, trusted_public_key=public_key)
+            finally:
+                store.close()
+            print(json.dumps({"run_id": args.run_id, "manifest_sha256": anchor, "paid_model_calls": 0}))
+            return 0
+        except (AuditError, KeyError, ValueError) as error:
+            reason = str(error) if isinstance(error, AuditError) else "audit_record_unavailable"
+            print(json.dumps({"verdict": "indeterminate", "reason_code": reason, "paid_model_calls": 0}))
+            return 2
     if args.action == "ticket-benchmark":
+        audit_signing_key = None
+        if args.audit_signing_key:
+            from .ticket_audit import AuditError, load_signing_seed
+            try:
+                audit_signing_key = load_signing_seed(args.audit_signing_key)
+            except AuditError as error:
+                print(json.dumps({"verdict": "indeterminate", "reason_code": str(error), "paid_model_calls": 0}))
+                return 2
         all_cases = load_ticket_cases()
         selected_ids = set(args.case)
         known = {case.case_id for case in all_cases}
@@ -63,13 +119,19 @@ def main(argv=None):
         store = Store(args.db)
         budget = Budget(store.conn, "0.00")
         results = []
+        audit_runs = []
         try:
             for case in selected:
                 for outcome in paired_ticket_benchmark(
                     case, Defense("marker-v1"), target_runtime=args.target_runtime,
-                    target_image=args.target_image,
+                    target_image=args.target_image, audit_signing_key=audit_signing_key,
                 ):
                     store.save(outcome)
+                    if outcome.audit_pack is not None:
+                        from .ticket_contracts import digest
+                        audit_runs.append({"run_id": outcome.run_id,
+                                           "manifest_sha256": digest(outcome.audit_pack["evidence_body"]["manifest"]),
+                                           "key_id": outcome.audit_pack["key_id"]})
                     results.append({
                         "case": case.case_id, "case_kind": case.case_kind,
                         "guard_enabled": outcome.guard_enabled,
@@ -84,10 +146,12 @@ def main(argv=None):
                 "mode": "synthetic_support_ticket", "target_runtime": args.target_runtime,
                 "fixture_counts": counts,
                 "paid_model_calls": 0, "budget_ceiling_dollars": str(budget.ceiling),
-                "results": results,
+                "results": results, "audit_runs": audit_runs,
             }, indent=2))
         finally:
             store.close()
+        if audit_signing_key is not None and len(audit_runs) != len(results):
+            return 2
         return
     if args.action == "agentdojo-import":
         observations = import_agentdojo_results(args.input)
@@ -187,4 +251,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -50,7 +50,7 @@ def implementation_digest() -> str:
     names = ("ticket_benchmark.py", "ticket_contracts.py", "ticket_evidence.py",
              "ticket_witness.py", "ticket_witness_worker.py", "ticket_verifier.py",
              "ticket_verifier_process.py", "ticket_verifier_worker.py", "target_runtime.py",
-             "ticket_target_worker.py")
+             "ticket_target_worker.py", "ticket_audit.py", "ticket_audit_worker.py")
     return digest({n: hashlib.sha256((root / n).read_bytes()).hexdigest() for n in names})
 
 
@@ -143,7 +143,20 @@ def verify_acquired_evidence(
         expected = seal(evidence["body"], key)["authentication"]
         if not hmac.compare_digest(expected, evidence["authentication"]):
             return unknown
-        body = evidence["body"]
+        return verify_witness_body(
+            evidence["body"], expected_manifest_sha256=expected_manifest_sha256,
+            oracle=oracle, run_id=run_id,
+        )
+    except (ValueError, TypeError, KeyError, AttributeError, UnicodeError, RecursionError):
+        return unknown
+
+
+def verify_witness_body(
+    body: object, *, expected_manifest_sha256: str, oracle: TicketOracle, run_id: str,
+) -> Verification:
+    """Replay structure and effects AFTER the caller authenticates its evidence source."""
+    unknown = Verification(False, False, False, "indeterminate")
+    try:
         if type(body) is not dict or set(body) != {
             "schema_version", "manifest", "events", "event_chain", "receipts", "snapshot",
         } or body["schema_version"] != VERSION:

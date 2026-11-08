@@ -223,6 +223,7 @@ def run_ticket_benchmark(
     partition: Literal["development", "holdout"] = "development",
     target_runtime: Literal["in_memory", "docker"] = "in_memory",
     target_image: str = "octoberblue-target:v0.2",
+    audit_signing_key: bytes | None = None,
     seed: int = 0,
     run_id: str | None = None,
 ) -> Outcome:
@@ -264,7 +265,11 @@ def run_ticket_benchmark(
     )
     witness = None
     try:
-        witness = TicketWitness(manifest, case.ticket_id, case.account_id)
+        if audit_signing_key is None:
+            witness = TicketWitness(manifest, case.ticket_id, case.account_id)
+        else:
+            witness = TicketWitness(manifest, case.ticket_id, case.account_id,
+                                    audit_signing_key=audit_signing_key)
         return _run_witnessed_ticket(
             case=case, defense=defense, guard_enabled=guard_enabled, policy=policy,
             partition=partition, seed=seed, run_id=run_id, target_runtime=target_runtime,
@@ -374,6 +379,7 @@ def _run_witnessed_ticket(
         evidence=evidence, authentication_key=recorder.key,
         expected_manifest_sha256=digest(recorder.manifest.to_wire()),
     )
+    audit_pack = recorder.audit_pack
     recorder = _Recorder(run_id)
     recorder.events = list(events)
     recorder.emit(
@@ -385,7 +391,7 @@ def _run_witnessed_ticket(
         run_id, partition, guard_enabled,
         verdict.task_success, verdict.completed,
         verdict.attempted, verdict.completed,
-        verdict.verdict, tuple(recorder.events), evidence,
+        verdict.verdict, tuple(recorder.events), evidence, audit_pack,
     )
 
 
@@ -396,12 +402,14 @@ def paired_ticket_benchmark(
     policy: TicketGatewayPolicy | None = None,
     target_runtime: Literal["in_memory", "docker"] = "in_memory",
     target_image: str = "octoberblue-target:v0.2",
+    audit_signing_key: bytes | None = None,
     seed: int = 0,
 ) -> tuple[Outcome, Outcome]:
     """Matched guard arms with exactly the same case, policy and seed."""
     pair_id = uuid.uuid4().hex
     common = {"case": case, "defense": defense, "policy": policy, "seed": seed,
-              "target_runtime": target_runtime, "target_image": target_image}
+              "target_runtime": target_runtime, "target_image": target_image,
+              "audit_signing_key": audit_signing_key}
     return (
         run_ticket_benchmark(**common, guard_enabled=False, run_id=f"{pair_id}-off"),
         run_ticket_benchmark(**common, guard_enabled=True, run_id=f"{pair_id}-on"),

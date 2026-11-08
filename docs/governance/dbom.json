@@ -14,7 +14,7 @@
       "files": [
         {
           "path": "src/octoberblue/contracts.py",
-          "sha256": "e25a2c1398db6b92bd3328d8023eba64bfc925988295a4dd8ff88e67748a6b52"
+          "sha256": "7022a9a459c3bc07a281d084dc46ae5e8712216ed094d0540ec4a791cf8f194e"
         }
       ]
     },
@@ -29,7 +29,7 @@
       "files": [
         {
           "path": "src/octoberblue/cli.py",
-          "sha256": "4c8e09206cd0c92d4641a4b45abdebd4ad94646d203e729f620dbc28c7f3a152"
+          "sha256": "971a929de6498bfc88f5b7185ae6eca94fa76187d0ee4b402630c013877e02aa"
         }
       ]
     },
@@ -44,7 +44,7 @@
       "files": [
         {
           "path": "src/octoberblue/contracts.py",
-          "sha256": "e25a2c1398db6b92bd3328d8023eba64bfc925988295a4dd8ff88e67748a6b52"
+          "sha256": "7022a9a459c3bc07a281d084dc46ae5e8712216ed094d0540ec4a791cf8f194e"
         }
       ]
     },
@@ -108,11 +108,11 @@
       "files": [
         {
           "path": "pyproject.toml",
-          "sha256": "cee1fc7f51e0d79b7e085d7c1e8413a23362a01506c85c0e04dde9754d409264"
+          "sha256": "6d676f230646578d8693cfba769cb76f4d33f15f6e22d7368a326d3b1366b99c"
         },
         {
           "path": "uv.lock",
-          "sha256": "096e3d4904905514ea6d66d2f1722d762e4122ee99ca5703c86f6b1951113467"
+          "sha256": "05eef6b6a9389415370d01e4a2b336cf43f0cd5566488fd8a2195e4f201fc626"
         }
       ]
     },
@@ -127,19 +127,31 @@
       "files": [
         {
           "path": "src/octoberblue/ticket_evidence.py",
-          "sha256": "83400de15f3c5b0021dcd2a6a35a26180917244868f1ea7f16fb730593f93299"
+          "sha256": "c76709f044785d65402513c122c4d3f34f0b7eca3b597ab229800c41c86ffb20"
         },
         {
           "path": "src/octoberblue/ticket_witness.py",
-          "sha256": "2fb00e61ad37788b1fcf9c9ed950fbb91446b484439e3f9a7614d65d41c51282"
+          "sha256": "40e763fe0f8f4f71aa16c17abe3c2b612173acc5d2037f64fb97e576602f2112"
         },
         {
           "path": "src/octoberblue/ticket_witness_worker.py",
-          "sha256": "cef48b7734d2b24cc3765bc073631333ecc6c0b7eacb54e69e86e32a38256665"
+          "sha256": "b01471d016e3fe284efa38d933fcbd7106c818a851412a6b14a0ef6af3ab68b9"
         },
         {
           "path": "schemas/run-manifest.v1.json",
           "sha256": "ba4ceadc771a8104aeac3eaeb3f8f11607aa6de2ecc60c75a56110997cf512da"
+        },
+        {
+          "path": "src/octoberblue/ticket_audit.py",
+          "sha256": "c5bf5f1f6b5215f3f0c081d839dcb0ed20b8b14cb2c1a77a15b8edb007e2ded1"
+        },
+        {
+          "path": "src/octoberblue/ticket_audit_worker.py",
+          "sha256": "c7d88440814333e1d704084134d13900d6ff00ba0a6c626a20426117b6c6412f"
+        },
+        {
+          "path": "schemas/ticket-audit-pack.v1.json",
+          "sha256": "bb993d63b4658b109ccc28d92b3ea205239a07df2ad61a033e1a63c491e04efc"
         }
       ]
     },
