@@ -59,3 +59,8 @@ compliance certificate or a claim of real-model defense quality.
    boundaries and immutable run snapshots.
 4. Only then enable opt-in live model agents, agent-framework runners and
    red/blue Dreaming under enforced cost and holdout restrictions.
+
+
+## Research review (November 8, 2026)
+
+The project remains aligned to the original red/blue security-research architecture, but the current toy benchmarks are not competitive security-efficacy evidence. Existing research already covers security-versus-utility tradeoffs, long-horizon injections and executable state scoring; our potential contribution must be the **reproducible, independent evidence chain** and the release gate that refuses unsupported success claims, including poisoned memory promotions. Prioritize Inspect AI / AgentDojo runtime compatibility over merely importing reports. See [current research positioning and acceptance gates](RESEARCH_DIRECTION_2026-11.md). Do not treat this design change as completed implementation.
