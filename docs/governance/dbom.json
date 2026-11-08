@@ -131,7 +131,7 @@
         },
         {
           "path": "src/octoberblue/ticket_contracts.py",
-          "sha256": "def2a50bbcbc8c9dc593cc9b1fe71789e8112becdeff846e1190e901a28557b3"
+          "sha256": "1172ecabb3a2420269d45d6b7c44b8e8013d5e433b1f59800d8f42941a1135ea"
         },
         {
           "path": "schemas/ticket-task.v1.json",
