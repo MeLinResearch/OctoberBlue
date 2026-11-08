@@ -56,3 +56,5 @@ The synthetic worker is vulnerable by construction and calls no model. v0.1 resu
 - **Development interoperability slice:** Promptfoo test-case JSON export/import of explicitly tagged v1 attack artifacts (data-only, no evaluator trust). AgentDojo target/task/trace adapter remains planned.
 
 - **External observations, not verifier evidence:** validated AgentDojo native task-result JSON importer with bounded redacted JSONL, fixture tests and no provider execution. AgentDojo benchmark runner integration remains planned.
+
+- **Gateway evidence check:** each recorded `tool_executed`/`tool_denied` now references exactly one tool request, and the independent subprocess verifier checks completeness before producing a conclusive score. Evidence attestation and target isolation remain pending.

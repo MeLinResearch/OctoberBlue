@@ -140,3 +140,7 @@ The `schemas/attack.v1.json` and `schemas/defense.v1.json` JSON Schema 2020-12 f
 ## Cross-framework interchange
 
 The development-only Promptfoo JSON test-case adapter is documented at [COMPATIBILITY.md](COMPATIBILITY.md). Tagged attack fixtures can be imported/exported without model execution. The adapter never assigns trusted verifier outcomes or tool permissions. AgentDojo and broader security testing framework adapters are planned, not yet implemented.
+
+## v0.2 request/effect correlation
+
+The harness now tags each synthetic tool execution or denial with the originating request event ID. The verifier requires a matching one-to-one event chain, consistent tool identity, trusted event origin, valid effect schema and final state equality. Missing, duplicated or orphaned effects are **indeterminate**, never pass. This is input-evidence consistency, not cryptographic proof: the harness still supplies the trace and snapshot and has not been separated from the target process.

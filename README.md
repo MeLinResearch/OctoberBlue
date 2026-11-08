@@ -162,3 +162,7 @@ The `schemas/` directory contains strict v1 attack/defense schemas; correspondin
 ### AgentDojo task result interoperability
 
 `uv run octoberblue agentdojo-import --input ./runs --output ./observations.jsonl` imports native AgentDojo per-task JSON logs into bounded, redacted observation records with source hashes and explicit external score labels. No API calls or paid models run. It does not yet execute AgentDojo tasks or validate their scores independently. See [compatibility documentation](docs/COMPATIBILITY.md).
+
+### Gateway event integrity
+
+The v0.2 gateway now correlates each tool request with its execution or denial, and the verifier rejects orphaned, duplicated or inconsistent effect histories. Inconsistent evidence becomes `indeterminate`, not a successful defense score. This does not replace a secure container or independent evidence acquisition.
