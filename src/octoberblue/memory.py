@@ -1,5 +1,7 @@
 """Separate evidence-linked red/blue memory versions; not autonomous Dreaming."""
 
+from .service_contracts import DreamProposalV1
+
 
 class Memory:
     def __init__(self, store, side):
@@ -16,14 +18,25 @@ class Memory:
         return {"version": row[0], "body": row[1]} if row else None
 
     def propose(self, run_id, lesson):
-        if not lesson.strip():
-            raise ValueError("empty lesson")
+        old = self.latest()
+        proposal = DreamProposalV1(
+            "1.0", self.side, old["version"] if old else None, run_id, lesson,
+        )
+        return self.propose_wire(proposal.to_wire())
+
+    def propose_wire(self, wire):
+        proposal = DreamProposalV1.from_wire(wire)
+        if proposal.side != self.side:
+            raise PermissionError("memory side mismatch")
+        old = self.latest()
+        if proposal.parent_version != (old["version"] if old else None):
+            raise ValueError("stale parent")
+        run_id, lesson = proposal.evidence_run_id, proposal.lesson
         run = self.store.get(run_id)
         if run["partition"] != "development":
             raise PermissionError("no holdout learning")
-        if run["verdict"] == "indeterminate":
+        if run["verdict"] not in ("pass", "fail"):
             raise ValueError("unverified run")
-        old = self.latest()
         v = self.store.conn.execute(
             "SELECT COALESCE(MAX(version),0)+1 FROM memory WHERE side=?", (self.side,)
         ).fetchone()[0]

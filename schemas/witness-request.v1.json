@@ -1,0 +1,387 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:witness-request:v1",
+  "title": "witness-request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sequence",
+    "operation",
+    "parameters"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "operation": {
+      "enum": [
+        "initialize",
+        "record",
+        "call",
+        "finalize"
+      ]
+    },
+    "parameters": {}
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "operation": {
+          "const": "initialize"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "run",
+            "credentials"
+          ],
+          "properties": {
+            "run": {
+              "$ref": "octoberblue:run-request:v1"
+            },
+            "credentials": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "authentication_key",
+                "audit_signing_key"
+              ],
+              "properties": {
+                "authentication_key": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "audit_signing_key": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "record"
+        },
+        "parameters": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "origin",
+                "kind",
+                "detail"
+              ],
+              "properties": {
+                "origin": {
+                  "const": "execution_harness"
+                },
+                "kind": {
+                  "const": "run_started"
+                },
+                "detail": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "task_id",
+                    "task_family",
+                    "task_sha256",
+                    "case_sha256",
+                    "surface",
+                    "partition",
+                    "seed",
+                    "synthetic_only",
+                    "target_runtime",
+                    "defense_sha256",
+                    "gateway_sha256"
+                  ],
+                  "properties": {
+                    "task_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                    },
+                    "task_family": {
+                      "const": "synthetic_support_ticket"
+                    },
+                    "task_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "case_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "surface": {
+                      "enum": [
+                        "ticket_body",
+                        "retrieved_knowledge_snippet",
+                        "tool_response_body"
+                      ]
+                    },
+                    "partition": {
+                      "const": "development"
+                    },
+                    "seed": {
+                      "type": "integer"
+                    },
+                    "synthetic_only": {
+                      "const": true
+                    },
+                    "target_runtime": {
+                      "enum": [
+                        "in_memory",
+                        "docker"
+                      ]
+                    },
+                    "defense_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "gateway_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "origin",
+                "kind",
+                "detail"
+              ],
+              "properties": {
+                "origin": {
+                  "const": "execution_harness"
+                },
+                "kind": {
+                  "const": "input_received"
+                },
+                "detail": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "source_id",
+                    "surface",
+                    "trust",
+                    "payload_sha256",
+                    "case_version",
+                    "guard_decision"
+                  ],
+                  "properties": {
+                    "source_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9:/._-]{0,255}$"
+                    },
+                    "surface": {
+                      "enum": [
+                        "ticket_body",
+                        "retrieved_knowledge_snippet",
+                        "tool_response_body"
+                      ]
+                    },
+                    "trust": {
+                      "const": "untrusted"
+                    },
+                    "payload_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "case_version": {
+                      "const": "1.0"
+                    },
+                    "guard_decision": {
+                      "$ref": "octoberblue:guard-decision:v1"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "origin",
+                "kind",
+                "detail"
+              ],
+              "properties": {
+                "origin": {
+                  "const": "execution_harness"
+                },
+                "kind": {
+                  "const": "content_delivered"
+                },
+                "detail": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "source_id",
+                    "surface",
+                    "trust",
+                    "payload_sha256"
+                  ],
+                  "properties": {
+                    "source_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9:/._-]{0,255}$"
+                    },
+                    "surface": {
+                      "enum": [
+                        "ticket_body",
+                        "retrieved_knowledge_snippet",
+                        "tool_response_body"
+                      ]
+                    },
+                    "trust": {
+                      "const": "untrusted"
+                    },
+                    "payload_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "origin",
+                "kind",
+                "detail"
+              ],
+              "properties": {
+                "origin": {
+                  "const": "blue_guard"
+                },
+                "kind": {
+                  "const": "filter"
+                },
+                "detail": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "blocked",
+                    "surface",
+                    "source_id",
+                    "defense_id"
+                  ],
+                  "properties": {
+                    "blocked": {
+                      "const": true
+                    },
+                    "surface": {
+                      "enum": [
+                        "ticket_body",
+                        "retrieved_knowledge_snippet",
+                        "tool_response_body"
+                      ]
+                    },
+                    "source_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9:/._-]{0,255}$"
+                    },
+                    "defense_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "origin",
+                "kind",
+                "detail"
+              ],
+              "properties": {
+                "origin": {
+                  "const": "execution_harness"
+                },
+                "kind": {
+                  "const": "target_runtime_failed"
+                },
+                "detail": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "reason_code"
+                  ],
+                  "properties": {
+                    "reason_code": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "call"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "properties": {
+            "tool": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+            },
+            "arguments": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "finalize"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        }
+      }
+    }
+  ]
+}

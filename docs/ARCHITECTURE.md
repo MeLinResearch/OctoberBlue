@@ -182,3 +182,17 @@ and manifest digest, then applies the pinned deterministic verifier and authored
 oracle in a separate process. Signing is an optional dependency, never enabled by
 default. Signer/host honesty is still trusted, and a signature is not an outcome
 oracle. See [the wire format and key custody](TICKET_AUDIT_PACKS.md).
+
+
+## Initial versioned service boundary enforcement
+
+The active ticket path now uses frozen RunRequest/RunRecord, Trace and
+GuardDecision v1 contracts. Both ends of witness RPCs validate operation shape
+and monotonic sequence; ticket verification and audit replay correlate versioned
+service envelopes to the request. New SQLite ticket records validate outcome,
+trace and manifest bindings; legacy rows remain explicitly unversioned.
+DreamProposal v1 guards the current manual evidence-linked memory proposal API
+without implementing Dreaming, regression gates or promotion authority.
+[The contract catalog](SERVICE_CONTRACTS.md) records schemas, version compatibility
+and remaining batch/live-agent requirements. Authentication and deterministic
+state verification remain independent of schema validation.

@@ -105,3 +105,11 @@ correct reply, so it cannot be counted as a successful defense.
 The next boundaries are the remaining versioned service contracts, key
 lifecycle management and stronger isolation, not an assertion that this toy already
 constitutes safe execution of hostile native code.
+
+
+The active ticket path now validates versioned run/trace/guard contracts,
+sequenced witness messages and correlated verifier/replay envelopes. Guard
+decisions are recorded in authenticated input provenance without copying raw
+payloads. New stored ticket runs have explicit `schema_version="1.0"`; historical
+unversioned records and invoice fixtures remain compatible observations. See
+[service contracts](SERVICE_CONTRACTS.md) for exact limits and migrations.

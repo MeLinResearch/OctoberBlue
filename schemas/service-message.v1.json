@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:service-message:v1",
+  "title": "service-message v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "service",
+    "operation",
+    "message_type",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "service": {
+      "const": "independent_verifier"
+    },
+    "operation": {
+      "enum": [
+        "verify_ticket",
+        "replay_ticket"
+      ]
+    },
+    "message_type": {
+      "enum": [
+        "request",
+        "response"
+      ]
+    },
+    "payload": {}
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "operation": {
+          "const": "verify_ticket"
+        },
+        "message_type": {
+          "const": "request"
+        },
+        "payload": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "run_id",
+                "oracle",
+                "events",
+                "snapshot"
+              ],
+              "properties": {
+                "run_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                },
+                "oracle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "ticket_id",
+                    "account_id",
+                    "expected_priority",
+                    "expected_reply_code",
+                    "task_sha256",
+                    "case_sha256"
+                  ],
+                  "properties": {
+                    "ticket_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                    },
+                    "expected_priority": {
+                      "enum": [
+                        "low",
+                        "normal",
+                        "high",
+                        "urgent"
+                      ]
+                    },
+                    "expected_reply_code": {
+                      "enum": [
+                        "access",
+                        "billing",
+                        "outage",
+                        "information"
+                      ]
+                    },
+                    "task_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "case_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  }
+                },
+                "events": {
+                  "$ref": "octoberblue:trace:v1#/properties/events"
+                },
+                "snapshot": {
+                  "$ref": "octoberblue:ticket-audit-pack:v1#/$defs/snapshot"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "run_id",
+                "oracle",
+                "evidence",
+                "authentication_key",
+                "expected_manifest_sha256"
+              ],
+              "properties": {
+                "run_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                },
+                "oracle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "ticket_id",
+                    "account_id",
+                    "expected_priority",
+                    "expected_reply_code",
+                    "task_sha256",
+                    "case_sha256"
+                  ],
+                  "properties": {
+                    "ticket_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                    },
+                    "expected_priority": {
+                      "enum": [
+                        "low",
+                        "normal",
+                        "high",
+                        "urgent"
+                      ]
+                    },
+                    "expected_reply_code": {
+                      "enum": [
+                        "access",
+                        "billing",
+                        "outage",
+                        "information"
+                      ]
+                    },
+                    "task_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "case_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  }
+                },
+                "evidence": {},
+                "authentication_key": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "expected_manifest_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "verify_ticket"
+        },
+        "message_type": {
+          "const": "response"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "task_success",
+            "attempted",
+            "completed",
+            "verdict"
+          ],
+          "properties": {
+            "task_success": {
+              "type": "boolean"
+            },
+            "attempted": {
+              "type": "boolean"
+            },
+            "completed": {
+              "type": "boolean"
+            },
+            "verdict": {
+              "enum": [
+                "pass",
+                "fail",
+                "indeterminate"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "replay_ticket"
+        },
+        "message_type": {
+          "const": "request"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pack",
+            "trusted_public_key",
+            "expected_manifest_sha256"
+          ],
+          "properties": {
+            "pack": {},
+            "trusted_public_key": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "expected_manifest_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "replay_ticket"
+        },
+        "message_type": {
+          "const": "response"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "task_success",
+            "attempted",
+            "completed",
+            "verdict",
+            "signature_verified",
+            "reason_code",
+            "run_id",
+            "manifest_sha256"
+          ],
+          "properties": {
+            "task_success": {
+              "type": "boolean"
+            },
+            "attempted": {
+              "type": "boolean"
+            },
+            "completed": {
+              "type": "boolean"
+            },
+            "verdict": {
+              "enum": [
+                "pass",
+                "fail",
+                "indeterminate"
+              ]
+            },
+            "signature_verified": {
+              "type": "boolean"
+            },
+            "reason_code": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+            },
+            "run_id": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+                }
+              ]
+            },
+            "manifest_sha256": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -41,8 +41,10 @@ The verifier authenticates acquisition against a separately supplied run key
 and immutable manifest digest. Docker ticket runs pin the resolved image ID.
 This advances E1 but does not close it. Optional acquisition-time Ed25519
 signatures and offline ticket audit replay have since been implemented against
-external operator keys and manifest anchors; full service contracts, key lifecycle
-and reviewed hostile-code containment remain open. See
+external operator keys and manifest anchors. An initial Run/Trace/Guard/Dream
+proposal catalog and versioned private service boundaries now exist; future
+live-agent/Dream batch contracts, key lifecycle and reviewed hostile-code
+containment remain open. See [service contracts](SERVICE_CONTRACTS.md). See
 [signed audit packs](TICKET_AUDIT_PACKS.md). See [the exact trust scope](TRUSTED_TICKET_EVIDENCE.md).
 
 ## The three experiments to make publication-worthy

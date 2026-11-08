@@ -5,6 +5,7 @@ import json
 import sys
 from dataclasses import asdict
 
+from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle
 from .ticket_evidence import verify_acquired_evidence
 from .ticket_verifier import TicketSnapshot, verify_ticket_evidence
@@ -25,10 +26,11 @@ def main() -> int:
         raw = sys.stdin.buffer.read(MAX_REQUEST_BYTES + 1)
         if not raw or len(raw) > MAX_REQUEST_BYTES:
             return 2
-        packet = json.loads(
+        message = json.loads(
             raw, object_pairs_hook=_unique,
             parse_constant=lambda _: (_ for _ in ()).throw(ValueError("not finite")),
         )
+        packet = service_payload(message, operation="verify_ticket")
         logical_fields = {"events", "snapshot", "oracle", "run_id"}
         acquired_fields = {"evidence", "authentication_key", "expected_manifest_sha256",
                            "oracle", "run_id"}
@@ -53,7 +55,9 @@ def main() -> int:
             verdict = verify_ticket_evidence(
                 packet["events"], snapshot, oracle=oracle, run_id=packet["run_id"],
             )
-        print(json.dumps(asdict(verdict), sort_keys=True))
+        response = service_message("verify_ticket", message["request_id"], asdict(verdict),
+                                   response=True)
+        print(json.dumps(response, sort_keys=True))
         return 0
     except (ValueError, TypeError, KeyError, AttributeError, UnicodeError):
         return 2

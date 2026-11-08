@@ -18,6 +18,7 @@ from typing import Literal
 
 from .benchmark import _Recorder
 from .contracts import Defense, Outcome
+from .service_contracts import GuardDecisionV1
 from .target_runtime import TargetRuntimeError, _propose_request, resolve_image_id
 from .ticket_contracts import (
     CATEGORIES,
@@ -307,17 +308,25 @@ def _run_witnessed_ticket(
         }),
         gateway_sha256=policy.fingerprint(),
     )
-    recorder.emit(
-        "execution_harness", "input_received", source_id=case.source_id,
-        surface=case.surface, trust="untrusted",
-        payload_sha256=digest({"payload": case.payload}),
-        case_version=case.schema_version,
-    )
     blocked = (
         guard_enabled and bool(case.payload)
         and any(marker.casefold() in case.payload.casefold()
                 for marker in defense.suspicious_markers if marker)
     )
+    decision = GuardDecisionV1(
+        schema_version="1.0", defense_id=defense.defense_id,
+        defense_sha256=digest({"defense_id": defense.defense_id,
+                               "markers": defense.suspicious_markers}),
+        guard_enabled=guard_enabled, source_id=case.source_id, surface=case.surface,
+        payload_sha256=digest({"payload": case.payload}), blocked=blocked,
+        reason_code="disabled" if not guard_enabled else "marker_match" if blocked else "no_match",
+    )
+    recorder.emit(
+        "execution_harness", "input_received", source_id=case.source_id,
+        surface=case.surface, trust="untrusted", payload_sha256=decision.payload_sha256,
+        case_version=case.schema_version, guard_decision=decision.to_wire(),
+    )
+    blocked = decision.blocked
     if blocked:
         recorder.emit(
             "blue_guard", "filter", blocked=True, surface=case.surface,

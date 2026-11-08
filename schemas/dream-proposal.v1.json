@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:dream-proposal:v1",
+  "title": "dream-proposal v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "side",
+    "parent_version",
+    "evidence_run_id",
+    "lesson",
+    "partition",
+    "approval_required"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "side": {
+      "enum": [
+        "red",
+        "blue"
+      ]
+    },
+    "parent_version": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ]
+    },
+    "evidence_run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "lesson": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000,
+      "pattern": "\\S"
+    },
+    "partition": {
+      "const": "development"
+    },
+    "approval_required": {
+      "const": true
+    }
+  }
+}

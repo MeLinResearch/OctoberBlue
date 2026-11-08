@@ -182,3 +182,26 @@ Overall invariant status counts remain unchanged: signer/host honesty, Windows
 key ACLs and key lifecycle are operator responsibilities; arbitrary hostile code,
 full service contracts and sealed real-agent evaluation remain unsupported.
 See [the durable audit scope](TICKET_AUDIT_PACKS.md). Default budget: $0.00.
+
+## Initial Run/Trace/Guard/Dream proposal service contracts (v0.2)
+
+`service_contracts.py` and the generated schema catalog now enforce active ticket
+run requests/records, ordered traces, provenance-bound guard decisions, manual
+memory proposals and private witness/verifier/replay envelopes. New ticket rows
+are validated on save and versioned load; legacy invoice/unversioned rows retain
+an explicit compatibility path. JSON Schema is a development-only check; runtime
+validators remain standard-library code. See [the catalog](SERVICE_CONTRACTS.md).
+
+`tests/test_service_contracts.py` extends partial INV-01/03/05/07/08/09/10/13 and
+F-03/F-09: unknown versions/authority fields, forged actors, duplicate events,
+mutable nested copies, malformed receipt collections, mismatched stored run
+identity, RPC replays, uncorrelated verifier responses, cross-side or stale-parent
+proposals, and self-labelled holdout evidence all fail closed. The suite validates
+actual messages, including signed run records, against the generated schemas.
+CI regenerates the schemas and DBOM and rejects drift.
+
+No overall invariant is upgraded by this slice. DreamProposal is a manual
+admission contract, not an epoch/consolidation protocol, regression gate or
+learning verifier. Strong sandboxing, OS privilege separation, all live-agent
+messages and full Dream batch/result/promotion contracts remain future work.
+The default paid-model budget remains $0.00.

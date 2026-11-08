@@ -126,5 +126,6 @@ source/oracle drift, key-file handling, unsigned-row export refusal, independent
 replay after key/database deletion, and no optional dependency in default mode.
 Linux Docker CI repeats normal, injected and benign false-positive guard arms,
 then deletes the private key and database before replaying all six packs.
-Full service contracts, stronger verifier/target isolation, key lifecycle
+The initial service catalog is now enforced (see [contracts](SERVICE_CONTRACTS.md));
+future live-agent/Dream batch contracts, stronger verifier/target isolation, key lifecycle
 management, sealed evaluation and real-agent measurements remain incomplete.

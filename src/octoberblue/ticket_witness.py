@@ -7,6 +7,12 @@ import subprocess
 import sys
 import threading
 
+from .service_contracts import (
+    RunRequestV1,
+    validate_event,
+    witness_request,
+    witness_response,
+)
 from .ticket_evidence import MAX_PACKET_BYTES, RunManifestV1, canonical, decode
 
 
@@ -28,6 +34,7 @@ class TicketWitness:
         self.process = None
         self.responses = queue.Queue(maxsize=1)
         self.sealed = False
+        self.sequence = 0
         try:
             self.process = subprocess.Popen(
                 [sys.executable, "-m", "octoberblue.ticket_witness_worker"],
@@ -60,12 +67,29 @@ class TicketWitness:
         if self.sealed:
             raise WitnessError("witness_already_sealed")
         try:
-            raw = canonical(request) + b"\n"
+            self.sequence += 1
+            operation = request["operation"]
+            if operation == "initialize":
+                run = RunRequestV1.from_wire({
+                    "schema_version": "1.0", "manifest": request["manifest"],
+                    "ticket_id": request["ticket_id"], "account_id": request["account_id"],
+                })
+                parameters = {"run": run.to_wire(), "credentials": {
+                    "authentication_key": request["key"],
+                    "audit_signing_key": request.get("audit_signing_key"),
+                }}
+            else:
+                parameters = {k: v for k, v in request.items() if k != "operation"}
+            envelope = {"schema_version": "1.0", "sequence": self.sequence,
+                        "operation": operation, "parameters": parameters}
+            witness_request(envelope, sequence=self.sequence)
+            raw = canonical(envelope) + b"\n"
             if len(raw) > MAX_PACKET_BYTES:
                 raise WitnessError("witness_request_limit")
             self.process.stdin.write(raw)
             self.process.stdin.flush()
-            return decode(self.responses.get(timeout=5))
+            response = decode(self.responses.get(timeout=5))
+            return witness_response(response, sequence=self.sequence)
         except (OSError, ValueError, TypeError, queue.Empty, RecursionError):
             raise WitnessError("witness_transport_failed") from None
 
@@ -76,6 +100,13 @@ class TicketWitness:
         events = response["events"]
         if type(events) is not list or not 1 <= len(events) <= 2:
             raise WitnessError("invalid_witness_events")
+        for index, event in enumerate(events, len(self.events) + 1):
+            try:
+                validate_event(event)
+                if event["event_id"] != f"{self.manifest.run_id}:{index:04}":
+                    raise ValueError("uncorrelated trace event")
+            except (ValueError, TypeError, KeyError):
+                raise WitnessError("invalid_witness_events") from None
         self.events.extend(events)
         return events
 
