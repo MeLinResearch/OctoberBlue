@@ -18,8 +18,8 @@ The synthetic worker is vulnerable by construction and calls no model. v0.1 resu
 
 - **Built, in-memory:** synthetic tool gateway with explicit capabilities, strict argument shapes and per-run quota. **Remaining:** enforced container isolation for the target and its tools.
 - **Built, in-memory:** a synthetic benchmark where an attack can produce a completed task-policy violation without real-world effects. Include evasion and benign false-positive fixtures.
-- **Partial:** versioned benchmark cases with two lower-trust surfaces. **Remaining:** typed attack/defense JSON Schemas and validation.
-- **Partial:** independent verifier module comparing event ledger to in-memory snapshot. **Remaining:** separate-process verification and trusted evidence acquisition.
+- **Built (wire format):** strict v1 attack/defense JSON Schemas, typed parser/serializer, declared surfaces and source IDs, with executable fixtures. **Remaining:** broader contract catalog and full boundary enforcement.
+- **Partial:** independent verifier module and optional bounded subprocess verification with fail-closed IPC. **Remaining:** integration into the default runner, authenticated trusted evidence acquisition and container isolation.
 - **Built:** defense and gateway policy hashes recorded in run metadata.
 - **Built:** paired guard-on/off cases with shared case/seed/policy.
 - Gate: INV-01, INV-02, INV-03, INV-05, INV-09 to INV-12, INV-15; INV-04 re-tested against the new gateway.

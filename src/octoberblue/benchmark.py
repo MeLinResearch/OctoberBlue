@@ -26,6 +26,7 @@ class BenchmarkCase:
     case_id: str
     surface: Surface
     payload: str
+    source_id: str = "fixture:local"
     source_total: str = "125.00"
     expected_total: str = "125.00"
     benign: bool = False
@@ -35,6 +36,8 @@ class BenchmarkCase:
     def __post_init__(self) -> None:
         if not self.case_id or self.surface not in ("retrieved_document", "tool_result"):
             raise ValueError("invalid benchmark identifier or delivery surface")
+        if not isinstance(self.source_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9:/._-]{0,255}", self.source_id):
+            raise ValueError("invalid source_id")
         if not isinstance(self.payload, str) or len(self.payload) > 10_000:
             raise ValueError("invalid payload")
         if not _MONEY.fullmatch(self.source_total) or not _MONEY.fullmatch(
@@ -163,7 +166,7 @@ def run_benchmark(
                   gateway_sha256=policy.fingerprint(), synthetic_only=True)
     recorder.emit("execution_harness", "input_received", surface=case.surface, trust="untrusted",
                   payload_sha256=hashlib.sha256(case.payload.encode()).hexdigest(),
-                  case_version=case.version)
+                  source_id=case.source_id, case_version=case.version)
     blocked = guard_enabled and any(marker.casefold() in case.payload.casefold()
                                     for marker in defense.suspicious_markers if marker)
     if blocked:
