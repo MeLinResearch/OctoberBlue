@@ -84,7 +84,8 @@ uv run octoberblue benchmark
 Its four synthetic cases run with the guard on/off (eight trials):
 clean completion; marker-detected injection; an evasion that retains a
 completed synthetic export; and a benign document that triggers a guard
-false positive and can prevent a legitimate task. The guard and gateway
+false positive and can prevent a legitimate task. A ninth trial shows an actual
+attempt denied by the trusted gateway's policy. The guard and gateway
 are separate: a permitted sandbox capability is not automatically an
 authorized task action. Verifier classifications use the recorded
 synthetic state, not attacker self-reports.

@@ -4,7 +4,7 @@
 import argparse
 import json
 
-from .benchmark import example_cases, paired_benchmark
+from .benchmark import GatewayPolicy, example_cases, paired_benchmark, run_benchmark
 from .budget import Budget
 from .contracts import Attack, Defense, Task
 from .engine import execute
@@ -30,6 +30,19 @@ def main(argv=None):
                                 "attack_success": outcome.attack_success,
                                 "attempted": outcome.attempted_unauthorized_action,
                                 "task_success": outcome.task_success, "verdict": outcome.verdict})
+        denied = run_benchmark(
+            case=example_cases()[1],
+            defense=Defense("marker-v1"),
+            guard_enabled=False,
+            policy=GatewayPolicy(allow_synthetic_export=False),
+        )
+        store.save(denied)
+        results.append({
+            "case": "gateway_denied", "guard_enabled": False,
+            "attack_success": denied.attack_success,
+            "attempted": denied.attempted_unauthorized_action,
+            "task_success": denied.task_success, "verdict": denied.verdict,
+        })
         print(json.dumps({"mode": "in_memory_synthetic_benchmark", "paid_model_calls": 0,
                           "budget_ceiling_dollars": str(budget.ceiling), "results": results}, indent=2))
         store.close()
