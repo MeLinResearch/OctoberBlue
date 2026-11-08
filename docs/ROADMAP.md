@@ -1,5 +1,7 @@
 # Roadmap
 
+Current research-informed positioning and proof gates: [RESEARCH_DIRECTION_2026-11.md](RESEARCH_DIRECTION_2026-11.md). This is an audit of missing capabilities, **not a claim of newly implemented features**.
+
 Each milestone ends with an acceptance gate: every invariant it owns in [REQUIREMENTS.md](REQUIREMENTS.md) is **Tested**, and CI is green on Linux, macOS and Windows. Presentation and documentation are updated in every milestone, not saved for the end.
 
 ## v0.1 — Offline scaffold (done)
@@ -60,3 +62,8 @@ The synthetic worker is vulnerable by construction and calls no model. v0.1 resu
 - **Gateway evidence check:** each recorded `tool_executed`/`tool_denied` now references exactly one tool request, and the independent subprocess verifier checks completeness before producing a conclusive score. Evidence attestation and target isolation remain pending.
 
 - **Built (ticket task slice):** strict versioned TaskSpec and ticket-case schemas, fixture provenance, paired guard arms, separate verifier-worker process, state replay and a persisted CLI benchmark. No sealed holdout or real-model assessment is claimed.
+
+
+## Research-alignment priorities (November 8, 2026)
+
+Research update: prioritize **trusted tool-effect witness + authenticated run evidence**, then **Inspect AI / AgentDojo native execution bridge**, followed by matched real-agent baseline comparisons and multi-turn/adaptive + memory-poisoning experiments. These are engineering priorities, **not shipped capabilities**. A generic LangGraph integration is secondary to trusted evidence and reproducible Inspect evaluation. See [the source-backed positioning audit](RESEARCH_DIRECTION_2026-11.md) for acceptance criteria and publication safeguards.
