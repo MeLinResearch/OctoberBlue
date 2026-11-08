@@ -315,7 +315,7 @@ def run_ticket_benchmark(
             gateway.call(tool, arguments)
     except TargetRuntimeError as error:
         # The verifier rejects this event; never retry inside the trusted process.
-        recorder.emit("execution_harness", "target_runtime_failed", reason=error.reason_code)
+        recorder.emit("execution_harness", "target_runtime_failed", reason_code=error.reason_code)
     snapshot = state.snapshot()
     recorder.emit(
         "execution_harness", "ticket_snapshot", **snapshot.to_wire(),
