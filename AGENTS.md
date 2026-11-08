@@ -36,7 +36,7 @@ uv run pytest -q
 
 - Don't claim live-model defense quality from fixture tests.
 - No invented benchmarks, performance numbers or decorative metrics.
-- Don't name or credit outside companies in project docs; refer to "provider adapters" and record exact model IDs in run manifests instead.
+- Name external tools, frameworks and model providers only where OctoberBlue actually uses or integrates them, the way a dependency list does. Never present an outside organization as a contributor, reviewer or endorser. Record exact model IDs in run manifests.
 
 ## External framework boundary
 
