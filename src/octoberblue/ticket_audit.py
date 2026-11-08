@@ -11,10 +11,10 @@ import re
 import secrets
 import stat
 import subprocess
-import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from .process_boundary import ProcessBoundaryError, run_trusted_worker
 from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle, digest, load_ticket_cases
 from .ticket_evidence import (
@@ -243,9 +243,8 @@ def replay_in_subprocess(pack: object, *, trusted_public_key: bytes,
         }))
         if len(request) > MAX_PACKET_BYTES:
             return _unknown("audit_pack_size")
-        process = subprocess.run(
-            [sys.executable, "-m", "octoberblue.ticket_audit_worker"], input=request,
-            capture_output=True, check=False, timeout=timeout,
+        process = run_trusted_worker(
+            "octoberblue.ticket_audit_worker", input=request, timeout=timeout,
         )
         if process.returncode != 0 or len(process.stdout) > 2048:
             return _unknown("audit_replay_worker_failed")
@@ -272,7 +271,7 @@ def replay_in_subprocess(pack: object, *, trusted_public_key: bytes,
         return AuditReplay(result["signature_verified"], result["reason_code"],
                            result["run_id"], result["manifest_sha256"], verification)
     except (OSError, ValueError, TypeError, AttributeError, RecursionError,
-            subprocess.TimeoutExpired):
+            subprocess.TimeoutExpired, ProcessBoundaryError):
         return _unknown("audit_replay_worker_failed")
 
 

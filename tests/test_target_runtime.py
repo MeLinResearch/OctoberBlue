@@ -45,10 +45,10 @@ def test_inv11_docker_args_drop_privileges_and_disable_network(monkeypatch):
 
     def fake_run(command, **kwargs):
         calls.append((command, kwargs))
-        return SimpleNamespace(returncode=0, stdout=json.dumps(propose(_request())),
+        return SimpleNamespace(returncode=0, stdout=json.dumps(propose(_request())).encode(),
                                stderr="")
 
-    monkeypatch.setattr("octoberblue.target_runtime.subprocess.run", fake_run)
+    monkeypatch.setattr("octoberblue.target_runtime.run_bounded", fake_run)
     result = propose_in_container(
         visible_payload="archive a copy", source_total="125.00",
         run_legitimate_task=True,
@@ -64,7 +64,7 @@ def test_inv11_docker_args_drop_privileges_and_disable_network(monkeypatch):
         assert flag in command
     assert not any(arg.startswith("--mount") or arg.startswith("--volume")
                    or arg == "--privileged" for arg in command)
-    assert kwargs["input"].find("capability_override") == -1
+    assert b"capability_override" not in kwargs["input"]
 
 
 @pytest.mark.parametrize("response", [
@@ -78,9 +78,9 @@ def test_inv11_docker_args_drop_privileges_and_disable_network(monkeypatch):
 ])
 def test_inv04_invalid_target_output_is_not_executed(monkeypatch, response):
     def fake_run(command, **kwargs):
-        return SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr="")
+        return SimpleNamespace(returncode=0, stdout=json.dumps(response).encode(), stderr="")
 
-    monkeypatch.setattr("octoberblue.target_runtime.subprocess.run", fake_run)
+    monkeypatch.setattr("octoberblue.target_runtime.run_bounded", fake_run)
     with pytest.raises(TargetRuntimeError, match="invalid_target_response"):
         propose_in_container(
             visible_payload="", source_total="125.00", run_legitimate_task=False,
@@ -134,12 +134,12 @@ def test_inv04_docker_rejects_duplicate_response_keys(monkeypatch):
     def response_with_duplicate_keys(command, **kwargs):
         return SimpleNamespace(
             returncode=0,
-            stdout='{"protocol":"' + PROTOCOL + '","proposals":[],"proposals":[]}',
+            stdout=('{"protocol":"' + PROTOCOL + '","proposals":[],"proposals":[]}').encode(),
             stderr="",
         )
 
     monkeypatch.setattr(
-        "octoberblue.target_runtime.subprocess.run", response_with_duplicate_keys,
+        "octoberblue.target_runtime.run_bounded", response_with_duplicate_keys,
     )
     with pytest.raises(TargetRuntimeError, match="invalid_target_response"):
         propose_in_container(
@@ -149,10 +149,10 @@ def test_inv04_docker_rejects_duplicate_response_keys(monkeypatch):
 
 def test_inv04_invalid_worker_utf8_is_indeterminate(monkeypatch):
     def bad_encoding(command, **kwargs):
-        raise UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid byte")
+        return SimpleNamespace(returncode=0, stdout=b"\xff", stderr=b"")
 
     monkeypatch.setattr(
-        "octoberblue.target_runtime.subprocess.run", bad_encoding,
+        "octoberblue.target_runtime.run_bounded", bad_encoding,
     )
     with pytest.raises(TargetRuntimeError, match="invalid_target_response"):
         propose_in_container(
@@ -168,9 +168,9 @@ def test_inv03_resolved_image_identity_is_immutable_and_strict(monkeypatch):
 
     def inspect(command, **kwargs):
         calls.append(command)
-        return SimpleNamespace(returncode=0, stdout=image_id + '\n')
+        return SimpleNamespace(returncode=0, stdout=(image_id + '\n').encode())
 
-    monkeypatch.setattr('octoberblue.target_runtime.subprocess.run', inspect)
+    monkeypatch.setattr('octoberblue.target_runtime.run_bounded', inspect)
     assert resolve_image_id('octoberblue-target:v0.2') == image_id
     assert calls == [['docker', 'image', 'inspect', '--format={{.Id}}',
                       'octoberblue-target:v0.2']]
@@ -181,7 +181,7 @@ def test_inv03_resolved_image_identity_is_immutable_and_strict(monkeypatch):
 def test_inv03_image_resolution_failure_is_closed(monkeypatch):
     from octoberblue.target_runtime import resolve_image_id
 
-    monkeypatch.setattr('octoberblue.target_runtime.subprocess.run',
-                        lambda *a, **k: SimpleNamespace(returncode=0, stdout='mutable:tag'))
+    monkeypatch.setattr('octoberblue.target_runtime.run_bounded',
+                        lambda *a, **k: SimpleNamespace(returncode=0, stdout=b'mutable:tag'))
     with pytest.raises(TargetRuntimeError):
         resolve_image_id('octoberblue-target:v0.2')

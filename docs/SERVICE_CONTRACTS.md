@@ -117,7 +117,9 @@ exist; they are not silently inferred from this proposal envelope.
   execute together under a pinned implementation. Raw old worker packets are
   rejected; public Python call signatures and legacy fixture workflows remain.
 
-Overall invariant statuses remain partial: stronger verifier/target isolation,
-bounded hostile target output, key lifecycle, live role orchestration and sealed
+One-shot target/verifier output is now streaming-bounded, and verifier startup
+is sanitized; see [process boundaries](PROCESS_BOUNDARIES.md). Overall invariant
+statuses remain partial: stronger OS privilege/target isolation, persistent
+witness write deadlines, key lifecycle, live role orchestration and sealed
 scientific evaluation are still pending. There is no new runtime dependency in
 the default core, no paid-model invocation and no real-model security finding.

@@ -23,7 +23,7 @@ compliance certificate or a claim of real-model defense quality.
 | --- | --- | --- |
 | Synthetic benchmark | Built (toy) | Nine offline cases, paired guard arms, synthetic successes, denials, false positives |
 | Host gateway | Built (toy) | Strict tool argument checks, quotas, request-effect correlation |
-| Deterministic verifier | Partial | Separate subprocess; ticket witness acquisition is authenticated with an ephemeral key; optional durable ticket signatures/replay now exist; OS privilege separation and key lifecycle remain open |
+| Deterministic verifier | Partial | Separate subprocess; ticket witness acquisition is authenticated with an ephemeral key; optional durable ticket signatures/replay now exist; bounded pipes and sanitized isolated-Python startup are implemented; OS privilege separation and key lifecycle remain open |
 | Target runtime | Partial | Optional restrictive Docker toy worker. Default still in-process; no arbitrary-code assurance |
 | Cross-boundary contracts | Partial | Attack/defense, ticket task/case, manifest/audit pack and initial Run/Trace/Guard/Dream proposal v1 are enforced; live-agent and full Dream batch/promotion contracts remain pending |
 | Framework compatibility | Partial | Promptfoo test-case import/export and AgentDojo native result importer, not complete runner integrations |

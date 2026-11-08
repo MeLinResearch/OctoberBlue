@@ -196,3 +196,16 @@ without implementing Dreaming, regression gates or promotion authority.
 [The contract catalog](SERVICE_CONTRACTS.md) records schemas, version compatibility
 and remaining batch/live-agent requirements. Authentication and deterministic
 state verification remain independent of schema validation.
+
+
+## Bounded one-shot process boundaries
+
+The fixed Docker proposal transport now reads stdout/stderr under hard byte
+budgets before parsing any proposals. Image-ID inspection, invoice/ticket
+verification and offline audit replay use the same bounded process primitive.
+Verifier workers start through an explicit module whitelist with `python -I -B`,
+a private temporary cwd and a minimal environment. Source identity includes this
+boundary implementation. No partial overflow response becomes evidence or a
+verdict. These controls improve startup/resource isolation, while the verifier
+still shares the trusted host user and OS privileges. See
+[budgets, cleanup and remaining containment work](PROCESS_BOUNDARIES.md).

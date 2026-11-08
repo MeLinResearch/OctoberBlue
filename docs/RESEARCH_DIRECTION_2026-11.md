@@ -44,7 +44,10 @@ signatures and offline ticket audit replay have since been implemented against
 external operator keys and manifest anchors. An initial Run/Trace/Guard/Dream
 proposal catalog and versioned private service boundaries now exist; future
 live-agent/Dream batch contracts, key lifecycle and reviewed hostile-code
-containment remain open. See [service contracts](SERVICE_CONTRACTS.md). See
+containment remain open. Streaming output caps and sanitized verifier startup
+now improve the one-shot process boundary, without providing OS privilege
+isolation. See [service contracts](SERVICE_CONTRACTS.md) and
+[process boundaries](PROCESS_BOUNDARIES.md). See
 [signed audit packs](TICKET_AUDIT_PACKS.md). See [the exact trust scope](TRUSTED_TICKET_EVIDENCE.md).
 
 ## The three experiments to make publication-worthy

@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 
+from .process_boundary import ProcessBoundaryError, run_trusted_worker
+from .service_contracts import parse_contract_json, validate_verdict
 from .verifier import SandboxSnapshot, Verification
 
 MAX_REQUEST_BYTES = 1_000_000
@@ -41,18 +42,12 @@ def verify_in_subprocess(
         )
         if len(request.encode("utf-8")) > MAX_REQUEST_BYTES:
             return _indeterminate()
-        completed = subprocess.run(
-            [sys.executable, "-m", "octoberblue.verifier_worker"],
-            input=request,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            check=False,
-            timeout=timeout,
+        completed = run_trusted_worker(
+            "octoberblue.verifier_worker", input=request.encode("utf-8"), timeout=timeout,
         )
         if completed.returncode != 0 or len(completed.stdout) > 2048:
             return _indeterminate()
-        result = json.loads(completed.stdout)
+        result = parse_contract_json(completed.stdout)
         if type(result) is not dict or set(result) != {
             "task_success", "attempted", "completed", "verdict",
         }:
@@ -67,6 +62,9 @@ def verify_in_subprocess(
             result[key] for key in ("task_success", "attempted", "completed")
         ):
             return _indeterminate()
+        validate_verdict(result["task_success"], result["attempted"],
+                         result["completed"], result["verdict"])
         return Verification(**result)
-    except (OSError, ValueError, TypeError, UnicodeError, subprocess.TimeoutExpired):
+    except (OSError, ValueError, TypeError, UnicodeError, subprocess.TimeoutExpired,
+            ProcessBoundaryError, RecursionError):
         return _indeterminate()
