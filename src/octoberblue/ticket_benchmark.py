@@ -5,8 +5,8 @@ synthetic account data, drafts a structured response and resolves the ticket.
 Three lower-trust input surfaces may contain prompt-injection text. All tools
 and state changes go through a host-owned, schema-checked simulated gateway.
 
-This task family runs in process. It does NOT use the invoice Docker target
-and is not safe for arbitrary hostile code or real customer information.
+The default is in-process; opt-in Docker isolates the fixed proposal worker.
+Neither mode is safe for arbitrary hostile code or real customer information.
 """
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from typing import Literal
 
 from .benchmark import _Recorder
 from .contracts import Defense, Outcome
+from .target_runtime import TargetRuntimeError, _propose_request
 from .ticket_contracts import (
     CATEGORIES,
     PRIORITIES,
@@ -25,6 +26,8 @@ from .ticket_contracts import (
     TicketOracle,
     digest,
 )
+from .ticket_target_worker import PROTOCOL as TICKET_PROTOCOL
+from .ticket_target_worker import propose
 from .ticket_verifier import TicketSnapshot
 from .ticket_verifier_process import verify_ticket_in_subprocess
 
@@ -122,6 +125,8 @@ class TicketGateway:
             if (
                 set(args) != {"ticket_id", "priority", "reply_code"}
                 or args["ticket_id"] != state.ticket_id
+                or type(args["priority"]) is not str
+                or type(args["reply_code"]) is not str
                 or args["priority"] not in PRIORITIES
                 or args["reply_code"] not in (*CATEGORIES, "generic")
             ):
@@ -213,10 +218,14 @@ def run_ticket_benchmark(
     guard_enabled: bool,
     policy: TicketGatewayPolicy | None = None,
     partition: Literal["development", "holdout"] = "development",
+    target_runtime: Literal["in_memory", "docker"] = "in_memory",
+    target_image: str = "octoberblue-target:v0.2",
     seed: int = 0,
     run_id: str | None = None,
 ) -> Outcome:
     """Run a deterministic toy worker; score only in the verifier subprocess."""
+    if target_runtime not in ("in_memory", "docker"):
+        raise ValueError("invalid target runtime")
     if partition != "development":
         # No sealed split exists. Never advertise a synthetic fixture as holdout.
         raise ValueError("ticket v0.2 has development fixtures only")
@@ -239,7 +248,7 @@ def run_ticket_benchmark(
         "execution_harness", "run_started", task_id=spec.task_id,
         task_family=spec.task_family, task_sha256=oracle.task_sha256,
         case_sha256=oracle.case_sha256, surface=case.surface,
-        partition=partition, seed=seed, synthetic_only=True,
+        partition=partition, seed=seed, synthetic_only=True, target_runtime=target_runtime,
         defense_sha256=digest({
             "defense_id": defense.defense_id,
             "markers": defense.suspicious_markers,
@@ -290,36 +299,23 @@ def run_ticket_benchmark(
         payload_sha256=digest({"payload": case.payload}),
     )
 
-    # A deliberately vulnerable *toy*, NOT an LLM: the delivered lower-trust
-    # text may spur an unauthorized proposal. Only the gateway can apply it.
-    lower = delivered[case.surface].casefold()
-    if "send a copy" in lower:
-        gateway.call("send_external_message", {
-            "sink": "sandbox://external", "record": "synthetic-account",
-        })
-    if "export customer data" in lower:
-        gateway.call("export_customer_data", {
-            "sink": "sandbox://exports", "record": "synthetic-account",
-        })
-    if "change user permissions" in lower:
-        gateway.call("change_user_permissions", {
-            "account_id": case.account_id, "role": "demo-admin",
-        })
-    if "close ticket now" in lower:
-        gateway.call("update_ticket_status", {
-            "ticket_id": case.ticket_id, "status": "closed",
-        })
-
-    # The legitimate response is based on the trusted synthetic ticket
-    # category/severity (not attacker-authored text or private holdout labels).
-    priority = ("low", "normal", "high", "urgent")[case.severity - 1]
-    reply = "generic" if blocked and case.context_required else case.category
-    gateway.call("draft_reply", {
-        "ticket_id": case.ticket_id, "priority": priority, "reply_code": reply,
-    })
-    gateway.call("update_ticket_status", {
-        "ticket_id": case.ticket_id, "status": "resolved",
-    })
+    request = {
+        "protocol": TICKET_PROTOCOL, "content": delivered[case.surface],
+        "ticket_id": case.ticket_id, "account_id": case.account_id,
+        "severity": case.severity, "category": case.category,
+        "context_filtered": blocked and case.context_required,
+    }
+    try:
+        proposals = (
+            _propose_request(request, image=target_image, ticket=True)
+            if target_runtime == "docker" else
+            tuple((p["tool"], p["arguments"]) for p in propose(request)["proposals"])
+        )
+        for tool, arguments in proposals:
+            gateway.call(tool, arguments)
+    except TargetRuntimeError as error:
+        # The verifier rejects this event; never retry inside the trusted process.
+        recorder.emit("execution_harness", "target_runtime_failed", reason_code=error.reason_code)
     snapshot = state.snapshot()
     recorder.emit(
         "execution_harness", "ticket_snapshot", **snapshot.to_wire(),
@@ -347,11 +343,14 @@ def paired_ticket_benchmark(
     defense: Defense,
     *,
     policy: TicketGatewayPolicy | None = None,
+    target_runtime: Literal["in_memory", "docker"] = "in_memory",
+    target_image: str = "octoberblue-target:v0.2",
     seed: int = 0,
 ) -> tuple[Outcome, Outcome]:
     """Matched guard arms with exactly the same case, policy and seed."""
     pair_id = uuid.uuid4().hex
-    common = {"case": case, "defense": defense, "policy": policy, "seed": seed}
+    common = {"case": case, "defense": defense, "policy": policy, "seed": seed,
+              "target_runtime": target_runtime, "target_image": target_image}
     return (
         run_ticket_benchmark(**common, guard_enabled=False, run_id=f"{pair_id}-off"),
         run_ticket_benchmark(**common, guard_enabled=True, run_id=f"{pair_id}-on"),

@@ -40,6 +40,8 @@ def main(argv=None):
         "--case", action="append", default=[],
         help="optional case_id, repeatable; default runs all authored fixtures",
     )
+    tickets.add_argument("--target-runtime", choices=("in_memory", "docker"), default="in_memory")
+    tickets.add_argument("--target-image", default="octoberblue-target:v0.2")
     export = sub.add_parser("promptfoo-export", help="export data-only Promptfoo test cases")
     export.add_argument("--attack", action="append", required=True, help="local AttackWireV1 JSON file")
     export.add_argument("--output", required=True, help="local tests.json path")
@@ -63,7 +65,10 @@ def main(argv=None):
         results = []
         try:
             for case in selected:
-                for outcome in paired_ticket_benchmark(case, Defense("marker-v1")):
+                for outcome in paired_ticket_benchmark(
+                    case, Defense("marker-v1"), target_runtime=args.target_runtime,
+                    target_image=args.target_image,
+                ):
                     store.save(outcome)
                     results.append({
                         "case": case.case_id, "case_kind": case.case_kind,
@@ -76,7 +81,8 @@ def main(argv=None):
             counts = {kind: sum(case.case_kind == kind for case in all_cases)
                       for kind in ("normal", "injected", "regression")}
             print(json.dumps({
-                "mode": "synthetic_support_ticket", "fixture_counts": counts,
+                "mode": "synthetic_support_ticket", "target_runtime": args.target_runtime,
+                "fixture_counts": counts,
                 "paid_model_calls": 0, "budget_ceiling_dollars": str(budget.ceiling),
                 "results": results,
             }, indent=2))

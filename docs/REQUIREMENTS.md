@@ -125,4 +125,15 @@ independent oracle identity or reviewed Docker daemon isolation.
 
 `ticket_verifier_worker` runs in a separate process. It checks input provenance, source/contract hashes, one-to-one request/effect lineage, tool schemas, read/draft/status state replay and the final ticket snapshot. Utility, attempted prohibited action and completed simulated effects remain separate. Unexpected events, missing evidence, transport failures and inconsistent snapshots return `indeterminate`. Tests: `tests/test_ticket_benchmark.py`, `tests/test_ticket_verifier_transport.py`. CI checks normal, detected attack and benign false-positive runs.
 
-**Not finished:** ticket-target containerization, authentic independent evidence collection, sealed holdouts, model-driven ticket classification and broader agent-tool integration. The existing invoice Docker path does not automatically isolate the ticket runtime. These remain partial INV-01/03/09/10/11 rather than full milestone acceptance.
+**Not finished:** authentic independent evidence collection, sealed holdouts, model-driven ticket classification and broader agent-tool integration. The existing invoice Docker path does not automatically isolate the ticket runtime. These remain partial INV-01/03/09/10/11 rather than full milestone acceptance.
+
+### Optional ticket target runtime
+
+`tests/test_ticket_target_runtime.py` extends partial INV-03/04/11 coverage:
+80 protocol parity cases, no fallback after runtime failure, no oracle/control
+fields in worker input, and host gateway denial despite a container proposal.
+Linux Docker CI also executes all 80 ticket trials and compares their scored
+outcomes with the inline baseline. The worker only proposes post-read actions;
+state and evidence remain host-owned. This does not close INV-01/03/09/10/11:
+authenticated evidence, immutable manifests and hostile-code containment are
+still missing. No live model is invoked and the default budget remains $0.00.
