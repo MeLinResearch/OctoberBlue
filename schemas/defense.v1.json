@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MeLinResearch/OctoberBlue/blob/main/schemas/defense.v1.json",
+  "title": "OctoberBlue DefenseWireV1",
+  "description": "Frozen marker-based defense specification for synthetic benchmark.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "defense_id",
+    "suspicious_markers"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "defense_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "suspicious_markers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    }
+  }
+}

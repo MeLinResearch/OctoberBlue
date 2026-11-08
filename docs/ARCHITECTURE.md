@@ -130,3 +130,9 @@ The `benchmark.py` fixture runner now demonstrates both successful synthetic tas
 | `memory.py` | Separate red/blue versioned memory: evidence-linked proposals, holdout refusal, stale-parent check, manual approval. Not Dreaming. |
 | `budget.py` | Single-connection reservation and settlement with a fail-closed unknown state. Not safe for concurrent paid calls. |
 | `cli.py` | The zero-dollar demo. |
+
+## v0.2 wire contracts and process verifier (development)
+
+The `schemas/attack.v1.json` and `schemas/defense.v1.json` JSON Schema 2020-12 files define narrow, versioned synthetic attack/defense messages. `wire.py` validates the same fields without runtime dependencies, rejects unknown keys, and converts parsed messages to the existing benchmark and frozen guard. Every attack names one of two lower-trust surfaces and a source identifier. In the benchmark, the source identifier travels in the trusted input event; payload text is hashed and never logged verbatim. These contracts are not yet enforced at every input adapter and are not comprehensive agent protocol contracts.
+
+`verifier_process.py` optionally invokes `python -m octoberblue.verifier_worker` over a bounded JSON stdin/stdout protocol. The separate process deterministically scores supplied ledger and state snapshots and returns `indeterminate` on invalid/missing output, timeout, or worker failure. This is **process separation, not secure sandboxing**: the default benchmark still calls the verifier directly, the parent supplies both evidence sources, and there is no evidence attestation, privilege separation or container isolation yet.

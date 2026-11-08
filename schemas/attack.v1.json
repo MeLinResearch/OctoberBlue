@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MeLinResearch/OctoberBlue/blob/main/schemas/attack.v1.json",
+  "title": "OctoberBlue AttackWireV1",
+  "description": "Lower-trust synthetic attack content. No automatic tool execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "attack_id",
+    "surface",
+    "payload",
+    "source_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "attack_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "surface": {
+      "enum": [
+        "retrieved_document",
+        "tool_result"
+      ]
+    },
+    "payload": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:/._-]{0,255}$"
+    }
+  }
+}
