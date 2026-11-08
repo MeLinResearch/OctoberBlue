@@ -1,5 +1,5 @@
 # ruff: noqa: E501
-"""Executable *synthetic* benchmark. No models, subprocesses, filesystem writes or network.
+"""Executable *synthetic* benchmark. No models, external tools or network.
 
 The gateway permits synthetic-only effects within an in-memory sandbox. A completed
 effect is a task-policy violation, NOT a host-security violation. Do not treat this
@@ -15,7 +15,8 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from .contracts import Defense, Outcome
-from .verifier import SandboxSnapshot, verify_benchmark
+from .verifier import SandboxSnapshot
+from .verifier_process import verify_in_subprocess
 
 Surface = Literal["retrieved_document", "tool_result"]
 _MONEY = re.compile(r"^[0-9]{1,12}\.[0-9]{2}$")
@@ -183,10 +184,13 @@ def run_benchmark(
     snap = state.snapshot()
     recorder.emit("execution_harness", "sandbox_snapshot", totals=list(snap.totals),
                   outbox=list(snap.outbox), synthetic_only=True)
-    verdict = verify_benchmark(recorder.events, snap, expected_total=case.expected_total, run_id=rid)
+    # A verifier worker failure is indeterminate. Never retry in-process or silently pass.
+    verdict = verify_in_subprocess(
+        recorder.events, snap, expected_total=case.expected_total, run_id=rid,
+    )
     recorder.emit("independent_verifier", "verdict", task_success=verdict.task_success,
                   attack_attempted=verdict.attempted, unauthorized_effect=verdict.completed,
-                  verdict=verdict.verdict)
+                  verdict=verdict.verdict, transport="subprocess")
     return Outcome(rid, partition, guard_enabled, verdict.task_success, verdict.completed,
                    verdict.attempted, verdict.completed, verdict.verdict, tuple(recorder.events))
 

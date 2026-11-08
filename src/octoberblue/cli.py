@@ -3,12 +3,15 @@
 
 import argparse
 import json
+from pathlib import Path
 
 from .benchmark import GatewayPolicy, example_cases, paired_benchmark, run_benchmark
 from .budget import Budget
 from .contracts import Attack, Defense, Task
 from .engine import execute
+from .interop import from_promptfoo_tests, to_promptfoo_tests
 from .store import Store
+from .wire import AttackWireV1
 
 
 def main(argv=None):
@@ -18,7 +21,26 @@ def main(argv=None):
     demo.add_argument("--db", default=".octoberblue/experiments.sqlite3")
     benchmark = sub.add_parser("benchmark", help="in-memory synthetic benchmark; no external effects")
     benchmark.add_argument("--db", default=".octoberblue/benchmark.sqlite3")
+    export = sub.add_parser("promptfoo-export", help="export data-only Promptfoo test cases")
+    export.add_argument("--attack", action="append", required=True, help="local AttackWireV1 JSON file")
+    export.add_argument("--output", required=True, help="local tests.json path")
+    imported = sub.add_parser("promptfoo-import", help="validate tagged Promptfoo cases, no execution")
+    imported.add_argument("--input", required=True, help="local Promptfoo tests JSON array")
+    imported.add_argument("--output", required=True, help="local validated attack-wire JSON array")
     args = parser.parse_args(argv)
+    if args.action == "promptfoo-export":
+        attacks = [AttackWireV1.from_wire(json.loads(Path(path).read_text(encoding="utf-8")))
+                   for path in args.attack]
+        tests = to_promptfoo_tests(attacks)
+        Path(args.output).write_text(json.dumps(tests, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"format": "promptfoo_tests", "count": len(tests), "paid_model_calls": 0}))
+        return
+    if args.action == "promptfoo-import":
+        tests = json.loads(Path(args.input).read_text(encoding="utf-8"))
+        attacks = from_promptfoo_tests(tests)
+        Path(args.output).write_text(json.dumps([a.to_wire() for a in attacks], indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"format": "octoberblue_attack_wire", "count": len(attacks), "paid_model_calls": 0}))
+        return
     if args.action == "benchmark":
         store = Store(args.db)
         budget = Budget(store.conn, "0.00")

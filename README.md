@@ -70,7 +70,7 @@ The demo runs clean and injected inputs with the guard off and on, stores each r
 ## v0.2 development: measurable synthetic attack outcomes
 
 The new **in-memory benchmark** has a deliberately vulnerable toy target,
-two lower-trust surfaces (\`retrieved_document\` and \`tool_result\`), an
+two lower-trust surfaces (`retrieved_document` and `tool_result`), an
 allowlisted synthetic gateway, quotas, a state snapshot and a separate
 deterministic oracle. It deliberately supports successful *task-policy*
 violations in a local Python list so attack success is no longer structurally
@@ -155,4 +155,6 @@ The research question: can attackers and defenders that learn separately from ve
 
 The `schemas/` directory contains strict v1 attack/defense schemas; corresponding checked-in examples are in `examples/`. `octoberblue.wire.AttackWireV1` and `DefenseWireV1` reject unknown fields and unsupported versions, round-trip JSON-compatible dictionaries, and convert to the existing offline benchmark types. Tests exercise both success and malformed inputs.
 
-`octoberblue.verifier_process.verify_in_subprocess` is an **opt-in** verifier transport for the synthetic benchmark. It starts a bounded verifier worker in a separate Python process, with fail-closed handling of bad input, worker errors and timeouts. The default runner still verifies in-process; no authenticated evidence capture or host/container sandbox has been implemented. This transport does not establish a hostile-code isolation boundary.
+`octoberblue.verifier_process.verify_in_subprocess` is the **default verifier transport** for the v0.2 benchmark. It starts a bounded verifier worker in a separate Python process and fails closed on invalid input, worker errors and timeouts. The original v0.1 `demo` remains a separate compatibility harness. Neither path has authenticated evidence capture or host/container sandboxing, so process separation is not yet a hostile-code isolation boundary.
+
+[Benchmark interchange documentation](docs/COMPATIBILITY.md) includes working Promptfoo test-case JSON export/import, with planned AgentDojo, PyRIT, garak, LangGraph and trace adapters. These names describe integration targets, not measured framework support.
