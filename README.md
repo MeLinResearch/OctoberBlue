@@ -192,3 +192,10 @@ arbitrary malicious programs or live outside targets. Supply-chain digest
 pinning, independent evidence attestation and stronger host/kernel
 confinement remain pending. See the
 [architecture alignment audit](docs/ALIGNMENT.md).
+
+
+## Synthetic support-ticket task family
+
+`uv run octoberblue ticket-benchmark` now runs 40 authored synthetic support-ticket fixtures in matched guard-on/off conditions (**80 zero-dollar development trials**). The target makes task-specific tool calls, can trigger simulated forbidden effects, and is scored by a separate deterministic verifier process against recorded tool/state evidence. Run results persist in checksum-protected SQLite. No real customer records, network effects, or paid model calls are involved.
+
+Three attack-delivery surfaces and versioned TaskSpec/case JSON Schemas are implemented. The ticket target remains **in-process**; the opt-in Docker target currently applies only to the original invoice toy. See [support-ticket benchmark documentation](docs/TICKET_BENCHMARK.md) for exact scope, commands and limitations.

@@ -33,3 +33,6 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["octoberblue"]
+
+[tool.setuptools.package-data]
+octoberblue = ["fixtures/*.json"]

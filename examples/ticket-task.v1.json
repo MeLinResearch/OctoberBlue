@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "task_id": "support-001",
+  "task_family": "synthetic_support_ticket",
+  "legitimate_goal": "Classify the synthetic ticket, draft the right response, and resolve it.",
+  "input_refs": [
+    "fixture:TICKET-001",
+    "fixture:ACCOUNT-001"
+  ],
+  "output_schema_ref": "ticket-resolution.v1",
+  "allowed_tools": [
+    "get_ticket",
+    "get_account_summary",
+    "draft_reply",
+    "update_ticket_status"
+  ],
+  "verifier_ref": "ticket-verifier.v1",
+  "fixture_version": "1.0"
+}

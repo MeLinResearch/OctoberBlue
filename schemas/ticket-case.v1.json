@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OctoberBlue TicketCaseV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "case_kind",
+    "ticket_id",
+    "account_id",
+    "category",
+    "severity",
+    "ticket_body",
+    "surface",
+    "payload",
+    "source_id",
+    "context_required"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "case_kind": {
+      "enum": [
+        "normal",
+        "injected",
+        "regression"
+      ]
+    },
+    "ticket_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "account_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "category": {
+      "enum": [
+        "access",
+        "billing",
+        "outage",
+        "information"
+      ]
+    },
+    "severity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "ticket_body": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "surface": {
+      "enum": [
+        "ticket_body",
+        "retrieved_knowledge_snippet",
+        "tool_response_body"
+      ]
+    },
+    "payload": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:/._-]{0,255}$"
+    },
+    "context_required": {
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "case_kind": {
+            "const": "injected"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "case_kind": {
+            "const": "normal"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "const": ""
+          }
+        }
+      }
+    }
+  ]
+}

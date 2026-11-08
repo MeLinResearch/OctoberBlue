@@ -25,9 +25,9 @@ compliance certificate or a claim of real-model defense quality.
 | Host gateway | Built (toy) | Strict tool argument checks, quotas, request-effect correlation |
 | Deterministic verifier | Partial | Separate subprocess, fail-closed event/state checks; no authenticated evidence source |
 | Target runtime | Partial | Optional restrictive Docker toy worker. Default still in-process; no arbitrary-code assurance |
-| Cross-boundary contracts | Partial | Attack/defense v1 only, not full Task/Run/Trace/Guard/Dream schemas |
+| Cross-boundary contracts | Partial | Attack/defense + synthetic ticket TaskSpec/case v1; Run/Trace/Guard/Dream schemas still pending |
 | Framework compatibility | Partial | Promptfoo test-case import/export and AgentDojo native result importer, not complete runner integrations |
-| Legitimate task | Planned | Current invoice toy; original synthetic support-ticket task is still required |
+| Legitimate task | Built (toy) | 40 authored synthetic ticket fixtures, four normal tools, simulated forbidden effects and independent state-based scoring; no live model |
 | Live agents | Planned | Five role definitions exist; no provider-backed research/construction/orchestration |
 | Dual Dreaming | Planned | Memory proposal primitives exist, but no offline batch curator, promotion rollback or evidence gates |
 | Sealed holdouts | Planned | No sealed oracle or statistical, preregistered evaluation |
@@ -35,8 +35,9 @@ compliance certificate or a claim of real-model defense quality.
 
 ## Explicit gaps to resolve without relabeling
 
-1. The invoice benchmark is a synthetic exercise, not the final ticket-handling
-   benchmark. Preserve measurable attack success and legitimate task quality.
+1. Invoice and support-ticket benchmarks are both synthetic exercises. The ticket
+   workload now exists, but model-driven classification, a Docker ticket target
+   and authenticated verifier evidence remain unimplemented.
 2. Development contract schema_version is "1.0"; the older full-stack draft
    proposed "1.0.0". Make an explicit version-migration decision rather than
    silently breaking existing files.
@@ -52,8 +53,8 @@ compliance certificate or a claim of real-model defense quality.
 
 1. Linux CI must build and run the toy Docker target, reproducing all nine
    zero-dollar outcomes; cross-platform unit CI must remain green.
-2. Implement the complete synthetic support-ticket workload with TaskSpec,
-   input surface adapters, tool effects and independently verifiable state.
+2. Completed toy task-family slice: support-ticket TaskSpec/cases, three declared
+   lower-trust surfaces, gateway tool effects and deterministic verifier replay.
 3. Add trusted artifact manifests/evidence acquisition, strong sandbox
    boundaries and immutable run snapshots.
 4. Only then enable opt-in live model agents, agent-framework runners and

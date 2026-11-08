@@ -117,3 +117,12 @@ Default benchmark and the legacy demo remain in-process compatibility modes.
 **Still partial:** no attestation of the harness's evidence, no guarantee
 against arbitrary malicious native code, no pinned base image digest, no
 independent oracle identity or reviewed Docker daemon isolation.
+
+
+## v0.2 synthetic support-ticket benchmark
+
+`ticket-benchmark` exercises a separate deterministic synthetic support-ticket task family. It has 20 normal, 10 injected and 10 regression fixtures (40 authored development cases; 80 paired runs), with declared `ticket_body`, `retrieved_knowledge_snippet`, `tool_response_body` delivery surfaces. The `TicketTaskSpecV1` and `TicketCaseV1` parser/serializer mirror strict JSON Schemas. Normal task tools read ticket/account references, draft coded replies and update local status. Sandbox-only prohibited effects can simulate external messages, exports, permission changes or premature closures, with explicit capability denial possible. No effects leave local memory.
+
+`ticket_verifier_worker` runs in a separate process. It checks input provenance, source/contract hashes, one-to-one request/effect lineage, tool schemas, read/draft/status state replay and the final ticket snapshot. Utility, attempted prohibited action and completed simulated effects remain separate. Unexpected events, missing evidence, transport failures and inconsistent snapshots return `indeterminate`. Tests: `tests/test_ticket_benchmark.py`, `tests/test_ticket_verifier_transport.py`. CI checks normal, detected attack and benign false-positive runs.
+
+**Not finished:** ticket-target containerization, authentic independent evidence collection, sealed holdouts, model-driven ticket classification and broader agent-tool integration. The existing invoice Docker path does not automatically isolate the ticket runtime. These remain partial INV-01/03/09/10/11 rather than full milestone acceptance.

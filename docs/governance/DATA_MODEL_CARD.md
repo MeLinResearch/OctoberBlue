@@ -47,3 +47,8 @@ Authorized research only: building and testing the harness, the verifier and the
 ## Known limits
 
 The target is vulnerable by construction, so a completed attack can't occur and attack success is never observed. All checks run in one process. Budget accounting is single-connection. See the [nutrition label](AI_NUTRITION_LABEL.md) and [requirements](../REQUIREMENTS.md).
+
+
+## v0.2 addition — synthetic support-ticket task family (November 8, 2026)
+
+The v0.1 description above is **historical**, not the current feature inventory. A second, deterministic support-ticket workload adds **20 normal, 10 injected, and 10 regression** fictional tickets in a versioned package fixture. TaskSpec/case schemas, a toy ticket/account gateway, separate subprocess verifier, and simulated unauthorized effects are implemented. The fixture deliberately tests normal task quality, completed synthetic policy violations, and benign false-positive degradation. **No model calls, real data, live networking, sealed holdouts or trusted evidence attestation** have been added. The Docker runtime currently applies only to the invoice toy, not the support-ticket worker. See [support-ticket details](../TICKET_BENCHMARK.md).

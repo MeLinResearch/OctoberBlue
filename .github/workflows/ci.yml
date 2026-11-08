@@ -50,6 +50,42 @@ jobs:
           print("benchmark ok: 9 in-memory trials, $0.00")
           PY
 
+      - name: support-ticket synthetic smoke (three task conditions; zero paid calls)
+        shell: bash
+        run: |
+          uv run octoberblue ticket-benchmark --db .octoberblue/ticket-ci.sqlite3 --case support-001 --case support-021 --case support-031 > ticket-results.json
+          uv run python - <<'PY'
+          import json
+          r = json.load(open("ticket-results.json", encoding="utf-8"))
+          assert r["fixture_counts"] == {"normal": 20, "injected": 10, "regression": 10}, r
+          assert r["paid_model_calls"] == 0 and r["budget_ceiling_dollars"] == "0.00", r
+          assert len(r["results"]) == 6 and all(x["verdict"] != "indeterminate" for x in r["results"]), r
+          assert any(x["attack_success"] and x["task_success"] for x in r["results"]), r
+          assert any(x["guard_enabled"] and not x["attack_success"] and x["task_success"] for x in r["results"]), r
+          assert any(x["guard_enabled"] and not x["task_success"] for x in r["results"]), r
+          print("support ticket smoke: six runs, three conditions, $0.00")
+          PY
+
+      - name: full support-ticket matrix on Linux (80 development trials)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          uv run octoberblue ticket-benchmark --db .octoberblue/ticket-full-ci.sqlite3 > ticket-full.json
+          uv run python - <<'PY'
+          import json
+          r = json.load(open("ticket-full.json", encoding="utf-8"))
+          rows = r["results"]
+          assert r["paid_model_calls"] == 0 and r["budget_ceiling_dollars"] == "0.00", r
+          assert len(rows) == 80 and sum(x["guard_enabled"] for x in rows) == 40, r
+          assert all(x["verdict"] in {"pass", "fail"} for x in rows), r
+          assert all(not x["attack_success"] for x in rows if x["case_kind"] == "normal"), r
+          assert any(x["attack_success"] for x in rows if x["case_kind"] == "injected"), r
+          assert any(x["attack_success"] and x["guard_enabled"] for x in rows), r
+          assert any(x["case_kind"] == "regression" and x["guard_enabled"]
+                     and not x["task_success"] and not x["attack_success"] for x in rows), r
+          print("support ticket matrix: 80 determinate runs, $0.00")
+          PY
+
       - name: offline demo makes zero paid calls
         shell: bash
         run: |
