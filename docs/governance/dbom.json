@@ -14,7 +14,7 @@
       "files": [
         {
           "path": "src/octoberblue/contracts.py",
-          "sha256": "6acc548c4595a0590f82ec6ce7416f1a1efc6f21c134567d61506eb5146870d5"
+          "sha256": "e25a2c1398db6b92bd3328d8023eba64bfc925988295a4dd8ff88e67748a6b52"
         }
       ]
     },
@@ -44,7 +44,7 @@
       "files": [
         {
           "path": "src/octoberblue/contracts.py",
-          "sha256": "6acc548c4595a0590f82ec6ce7416f1a1efc6f21c134567d61506eb5146870d5"
+          "sha256": "e25a2c1398db6b92bd3328d8023eba64bfc925988295a4dd8ff88e67748a6b52"
         }
       ]
     },
@@ -113,6 +113,33 @@
         {
           "path": "uv.lock",
           "sha256": "096e3d4904905514ea6d66d2f1722d762e4122ee99ca5703c86f6b1951113467"
+        }
+      ]
+    },
+    {
+      "id": "D09",
+      "name": "ticket_witness_evidence",
+      "origin": "Produced by the trusted ticket witness subprocess",
+      "use": "Frozen manifest, chained events, action receipts and ephemeral acquisition authentication",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/ticket_evidence.py",
+          "sha256": "83400de15f3c5b0021dcd2a6a35a26180917244868f1ea7f16fb730593f93299"
+        },
+        {
+          "path": "src/octoberblue/ticket_witness.py",
+          "sha256": "2fb00e61ad37788b1fcf9c9ed950fbb91446b484439e3f9a7614d65d41c51282"
+        },
+        {
+          "path": "src/octoberblue/ticket_witness_worker.py",
+          "sha256": "cef48b7734d2b24cc3765bc073631333ecc6c0b7eacb54e69e86e32a38256665"
+        },
+        {
+          "path": "schemas/run-manifest.v1.json",
+          "sha256": "ba4ceadc771a8104aeac3eaeb3f8f11607aa6de2ecc60c75a56110997cf512da"
         }
       ]
     },

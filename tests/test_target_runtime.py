@@ -158,3 +158,30 @@ def test_inv04_invalid_worker_utf8_is_indeterminate(monkeypatch):
         propose_in_container(
             visible_payload="", source_total="125.00", run_legitimate_task=False,
         )
+
+
+def test_inv03_resolved_image_identity_is_immutable_and_strict(monkeypatch):
+    from octoberblue.target_runtime import resolve_image_id
+
+    calls = []
+    image_id = 'sha256:' + 'a' * 64
+
+    def inspect(command, **kwargs):
+        calls.append(command)
+        return SimpleNamespace(returncode=0, stdout=image_id + '\n')
+
+    monkeypatch.setattr('octoberblue.target_runtime.subprocess.run', inspect)
+    assert resolve_image_id('octoberblue-target:v0.2') == image_id
+    assert calls == [['docker', 'image', 'inspect', '--format={{.Id}}',
+                      'octoberblue-target:v0.2']]
+    with pytest.raises(ValueError):
+        resolve_image_id('arbitrary:latest')
+
+
+def test_inv03_image_resolution_failure_is_closed(monkeypatch):
+    from octoberblue.target_runtime import resolve_image_id
+
+    monkeypatch.setattr('octoberblue.target_runtime.subprocess.run',
+                        lambda *a, **k: SimpleNamespace(returncode=0, stdout='mutable:tag'))
+    with pytest.raises(TargetRuntimeError):
+        resolve_image_id('octoberblue-target:v0.2')

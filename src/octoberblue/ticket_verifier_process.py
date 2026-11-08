@@ -6,10 +6,11 @@ import subprocess
 import sys
 
 from .ticket_contracts import TicketOracle
+from .ticket_evidence import MAX_PACKET_BYTES, decode
 from .ticket_verifier import TicketSnapshot
 from .verifier import Verification
 
-MAX_REQUEST_BYTES = 100_000
+MAX_REQUEST_BYTES = MAX_PACKET_BYTES
 
 
 def _indeterminate() -> Verification:
@@ -23,12 +24,22 @@ def verify_ticket_in_subprocess(
     oracle: TicketOracle,
     run_id: str,
     timeout: float = 5.0,
+    evidence: dict | None = None,
+    authentication_key: bytes | None = None,
+    expected_manifest_sha256: str | None = None,
 ) -> Verification:
     try:
-        request = json.dumps({
-            "events": events, "snapshot": snapshot.to_wire(),
-            "oracle": oracle.__dict__, "run_id": run_id,
-        }, sort_keys=True, allow_nan=False)
+        if evidence is not None or authentication_key is not None or expected_manifest_sha256:
+            if type(authentication_key) is not bytes or len(authentication_key) != 32:
+                return _indeterminate()
+            packet = {"evidence": evidence, "authentication_key": authentication_key.hex(),
+                      "expected_manifest_sha256": expected_manifest_sha256,
+                      "oracle": oracle.__dict__, "run_id": run_id}
+        else:
+            # Compatibility-only logical consistency checks, not authenticated acquisition.
+            packet = {"events": events, "snapshot": snapshot.to_wire(),
+                      "oracle": oracle.__dict__, "run_id": run_id}
+        request = json.dumps(packet, sort_keys=True, allow_nan=False)
         if len(request.encode("utf-8")) > MAX_REQUEST_BYTES:
             return _indeterminate()
         response = subprocess.run(
@@ -38,7 +49,7 @@ def verify_ticket_in_subprocess(
         )
         if response.returncode != 0 or len(response.stdout) > 2048:
             return _indeterminate()
-        value = json.loads(response.stdout)
+        value = decode(response.stdout.encode("utf-8"))
         if type(value) is not dict or set(value) != {
             "task_success", "attempted", "completed", "verdict",
         }:

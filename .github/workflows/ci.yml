@@ -161,5 +161,17 @@ jobs:
           assert len(docker["results"]) == 80
           assert all(row["verdict"] != "indeterminate" for row in docker["results"])
           assert docker["results"] == inline["results"]
-          print("ticket parity: 80 real Docker trials match inline; $0.00")
+          import sqlite3
+          with sqlite3.connect(".octoberblue/ticket-docker.sqlite3") as db:
+              saved = [json.loads(row[0]) for row in db.execute("SELECT body_json FROM runs")]
+          assert len(saved) == 80
+          for run in saved:
+              evidence = run["evidence"]
+              body = evidence["body"]
+              assert body["manifest"]["target_runtime"] == "docker"
+              assert body["manifest"]["image_id"].startswith("sha256:")
+              assert len(body["event_chain"]) == len(body["events"])
+              assert len(body["receipts"]) == sum(e["kind"] == "tool_request" for e in body["events"])
+              assert "authentication_key" not in evidence and "key" not in body
+          print("ticket parity: 80 authenticated Docker witness trials match inline; $0.00")
           PYTHON

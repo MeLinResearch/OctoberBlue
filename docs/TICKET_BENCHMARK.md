@@ -83,19 +83,23 @@ correct reply, so it cannot be counted as a successful defense.
   to exact simulated phrases. This cannot establish defense effectiveness.
 - **No sealed holdout:** these are published *development* fixtures only.
   Passing `partition="holdout"` is rejected.
-- **No trusted evidence attestation:** the verifier is separate, but the
-  parent harness supplies its trace, task oracle and snapshot.
+- **Authenticated acquisition, limited trust scope:** a trusted subprocess now
+  owns the ticket gateway and state, seals action receipts and terminal evidence,
+  and the verifier authenticates them with a run key and manifest digest supplied
+  separately by the harness. Keys never reach the target or persisted evidence.
+  This is not hardware attestation, protection from a compromised harness, or
+  durable public-key audit verification. See [the evidence boundary](TRUSTED_TICKET_EVIDENCE.md).
 - **Optional fixed ticket container:** build `docker/target.Dockerfile`, then run
   `octoberblue ticket-benchmark --target-runtime docker`. The default remains
   in-process. Only visible synthetic content, ticket/account identifiers,
   severity/category and a filtered-context flag cross into the worker. Oracle,
-  policy, evidence, budgets and database remain outside it. The host performs
-  initial reads, delivers context, validates proposals through the gateway and
+  policy, evidence, budgets and database remain outside it. The harness orchestrates
+  initial reads, delivers context, sends proposals through the witness gateway and
   invokes the separate verifier. Invalid output, timeout or runtime failure
   yields `indeterminate` without an inline retry. The Docker restrictions are
   shared with the invoice toy; this is not reviewed arbitrary-code containment.
 - **No real data:** all tickets, account IDs, messages, and sinks are fictional.
 
-The next boundary is independently authenticated evidence acquisition and an
-immutable manifest binding the ticket runtime, policy, task and evidence, not an assertion that this toy already
+The next boundaries are durable audit authentication, exported replay and the
+remaining versioned service contracts, not an assertion that this toy already
 constitutes safe execution of hostile native code.

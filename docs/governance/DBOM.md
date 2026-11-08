@@ -21,3 +21,11 @@ D01 to D03 feed the harness. The harness and verifier produce D04. An operator t
 No personal data, credentials, external datasets, model weights or model outputs are used. Live model calls, research ingestion and sealed holdouts arrive in later milestones and will each add assets here with their origin, rights and hashes.
 
 [AI label](AI_NUTRITION_LABEL.md) · [Data / model card](DATA_MODEL_CARD.md) · [Requirements](../REQUIREMENTS.md)
+
+## Ticket witness evidence (v0.2 development)
+
+D09 records the authored witness implementation and strict manifest schema.
+Runtime evidence contains hashes, synthetic before/after state and an ephemeral
+HMAC tag. Keys and raw proposal arguments are excluded from persisted evidence.
+No new external dataset, real customer data or model output is introduced.
+The envelope is not a portable source-authentication proof after key disposal.

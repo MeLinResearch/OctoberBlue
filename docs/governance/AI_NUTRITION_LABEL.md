@@ -86,3 +86,11 @@ Every compliance row names the invariants in [REQUIREMENTS.md](../REQUIREMENTS.m
 **v0.2 development addendum (November 8, 2026):** A separate in-memory synthetic benchmark now records successful task-policy violations, guard-on/off comparisons, evasion, false positives, and separate deterministic state/event verdicts. These are toy-fixture outcomes, not a security efficacy estimate. The v0.1 artwork and baseline tables above intentionally remain labeled v0.1; they must not be presented as a v0.2 audit or compliance certification.
 
 This is a project label, not a compliance certification.
+
+**Ticket witness development addendum:** ticket gateway/state now live in a
+trusted subprocess. Receipts, event chain, manifest and terminal state are
+HMAC-authenticated during acquisition, before independent deterministic replay.
+No key is persisted or supplied to the target. The trusted host can still forge
+evidence; durable public-key audit authentication and hostile-code containment
+remain absent. See [the trust scope](../TRUSTED_TICKET_EVIDENCE.md). The historical
+v0.1 control statuses and artwork above are unchanged.

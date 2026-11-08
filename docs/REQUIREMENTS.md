@@ -137,3 +137,26 @@ outcomes with the inline baseline. The worker only proposes post-read actions;
 state and evidence remain host-owned. This does not close INV-01/03/09/10/11:
 authenticated evidence, immutable manifests and hostile-code containment are
 still missing. No live model is invoked and the default budget remains $0.00.
+
+## Authenticated ticket witness slice (v0.2; still partial)
+
+The active ticket benchmark now acquires state and action receipts from a
+separate state-owning witness process. `RunManifestV1` pins configuration,
+implementation bytes and immutable Docker image ID. The verifier authenticates
+the complete envelope against a separately supplied ephemeral run key and
+manifest digest before deterministic state replay. Evidence is persisted in
+`Outcome.evidence`; keys are never persisted. See
+[trusted ticket evidence](TRUSTED_TICKET_EVIDENCE.md) for key custody and limits.
+
+`tests/test_ticket_witness.py` extends partial INV-01/03/05/09/10/12/15 and
+F-06/F-09/F-13: corruption and run substitution fail closed, action receipts
+bind actual before/after state, parent mirrors cannot mutate witness records,
+metadata cannot fabricate effects, witness death has no gateway fallback,
+and fresh acquisitions reproduce fixture behavior. `test_inv03_resolved_image_identity_is_immutable_and_strict`
+checks image-ID acquisition; actual Docker CI still compares all 80 ticket arms.
+
+No invariant's overall milestone status is upgraded: subprocesses share a host
+user, the harness/OS remain trusted, ephemeral HMAC is not portable audit-pack
+authentication, inline fixture mode is not containment, and the full contract,
+replay/export and hostile-code requirements remain open. No paid calls or
+real-agent security claims are introduced.
