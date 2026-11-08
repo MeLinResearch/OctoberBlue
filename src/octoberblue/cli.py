@@ -5,6 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .agentdojo_adapter import import_agentdojo_results
 from .benchmark import GatewayPolicy, example_cases, paired_benchmark, run_benchmark
 from .budget import Budget
 from .contracts import Attack, Defense, Task
@@ -27,7 +28,18 @@ def main(argv=None):
     imported = sub.add_parser("promptfoo-import", help="validate tagged Promptfoo cases, no execution")
     imported.add_argument("--input", required=True, help="local Promptfoo tests JSON array")
     imported.add_argument("--output", required=True, help="local validated attack-wire JSON array")
+    dojo = sub.add_parser("agentdojo-import", help="import native AgentDojo run JSON")
+    dojo.add_argument("--input", required=True, help="local JSON file or log directory")
+    dojo.add_argument("--output", required=True, help="redacted JSONL observations")
     args = parser.parse_args(argv)
+    if args.action == "agentdojo-import":
+        observations = import_agentdojo_results(args.input)
+        output = "".join(json.dumps(o.to_wire(), sort_keys=True) + "\n" for o in observations)
+        Path(args.output).write_text(output, encoding="utf-8")
+        print(json.dumps({"format": "octoberblue_external_observations",
+                          "count": len(observations), "paid_model_calls": 0,
+                          "verified_verdicts": 0}))
+        return
     if args.action == "promptfoo-export":
         attacks = [AttackWireV1.from_wire(json.loads(Path(path).read_text(encoding="utf-8")))
                    for path in args.attack]

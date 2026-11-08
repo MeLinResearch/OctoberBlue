@@ -86,3 +86,7 @@ By v0.6 CI must also run contract (schema) validation, integration tests, securi
 - `test_inv01_benchmark_uses_subprocess_by_default` proves the active benchmark invokes the verifier process transport.
 - `test_inv01_verifier_failure_fails_closed_without_inprocess_fallback` proves worker failure is never silently upgraded to a pass.
 - Promptfoo-formatted, tagged attack fixtures round-trip through strict admission validation in `tests/test_interop.py`. This is **data interchange, not a third-party scorer or fully supported framework runner**.
+
+## AgentDojo interoperability check
+
+`tests/test_agentdojo_adapter.py` checks native-format ingest, separation of externally reported utility/security from the authoritative OctoberBlue verifier, indeterminate handling of incomplete/error records, field redaction, duplicate JSON key rejection, directory bounds and CLI export. This is **not a live agent benchmark or independent proof of the upstream score**.

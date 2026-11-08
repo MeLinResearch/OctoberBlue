@@ -24,11 +24,37 @@ surface. No assertions or external verdicts are imported or synthesized.
 Running the test externally may invoke paid models or disclose payloads;
 OctoberBlue's zero-dollar guarantee covers only its own local conversion.
 
+## Available: AgentDojo native task-result JSON importer
+
+`octoberblue agentdojo-import` reads one AgentDojo `TaskResults` JSON log or
+a directory of its logs, and writes **redacted JSONL external observations**.
+
+```bash
+uv run octoberblue agentdojo-import --input ./runs/model/workspace --output ./dojo-observations.jsonl
+```
+
+Fields retained: suite, model pipeline, user and injection task identifiers,
+attack type, SHA-256 of the original file, source-relative file path, and the
+upstream reported utility/security booleans. When a valid injected run reports
+`security=false`, the exporter marks **reported** attack success (not
+verified completion). Missing results or upstream errors produce null scores.
+
+**No model calls, AgentDojo dependency, or network calls** occur on import. The
+importer never copies raw messages, injection payloads, tool arguments or
+error strings. Input sizes and file counts are capped, malformed/duplicate
+results fail closed. The importer does not ingest holdouts into Dreaming.
+
+The exported `verifier_verdict` is always `indeterminate`: upstream reports are
+not OctoberBlue-owned sandbox evidence. This does **not** yet let OctoberBlue
+execute AgentDojo suites. Live AgentDojo task runner / trusted oracle integration
+remains future work, with upstream versions pinned at that point. Native logs
+were checked against AgentDojo's published `TaskResults` and `TraceLogger` formats.
+
 ## Planned integrations (not implemented)
 
 | Integration | Why it matters | Boundary |
 | --- | --- | --- |
-| AgentDojo | Task-based prompt-injection benchmark with environment/tool effects | Adapt suite/task/attack plus oracle evidence; pin upstream API |
+| AgentDojo runner | Task-based prompt-injection benchmark with environment/tool effects | Native result import exists; suite execution and trusted oracle integration still pending |
 | PyRIT | Attack execution, scoring and multi-turn experiments | Ingest trace and scorer outputs as observations, not trusted verdicts |
 | garak | General LLM probe and finding ecosystem | Import probe evidence, retain detection/attack provenance |
 | LangGraph | Runtime for building agents rather than a security scoring standard | Optional target execution adapter; no implicit authority |
