@@ -17,7 +17,7 @@ The synthetic worker is vulnerable by construction and calls no model. v0.1 resu
 ## v0.2 — Real benchmark (in progress)
 
 - **Built:** host-owned synthetic tool gateway with strict capabilities, schemas and quotas. **Partial:** opt-in Docker toy target proposes calls into the trusted gateway with no network or host mounts. **Remaining:** independently authenticated evidence, trusted image pinning and stronger containment for arbitrary hostile programs.
-- **Built, in-memory:** a synthetic benchmark where an attack can produce a completed task-policy violation without real-world effects. Include evasion and benign false-positive fixtures.
+- **Built:** invoice toy and separate support-ticket task family with 20 normal, 10 injected and 10 regression fixtures, three input surfaces, task-specific gateway state and separately verified synthetic effects. **Remaining:** real target adapters and containerization of the ticket worker.
 - **Built (wire format):** strict v1 attack/defense JSON Schemas, typed parser/serializer, declared surfaces and source IDs, with executable fixtures. **Remaining:** broader contract catalog and full boundary enforcement.
 - **Partial:** benchmark verification now defaults to a bounded verifier subprocess, failing closed on worker failure. **Remaining:** authenticated trusted evidence acquisition and real target container isolation.
 - **Built:** defense and gateway policy hashes recorded in run metadata.
@@ -58,3 +58,5 @@ The synthetic worker is vulnerable by construction and calls no model. v0.1 resu
 - **External observations, not verifier evidence:** validated AgentDojo native task-result JSON importer with bounded redacted JSONL, fixture tests and no provider execution. AgentDojo benchmark runner integration remains planned.
 
 - **Gateway evidence check:** each recorded `tool_executed`/`tool_denied` now references exactly one tool request, and the independent subprocess verifier checks completeness before producing a conclusive score. Evidence attestation and target isolation remain pending.
+
+- **Built (ticket task slice):** strict versioned TaskSpec and ticket-case schemas, fixture provenance, paired guard arms, separate verifier-worker process, state replay and a persisted CLI benchmark. No sealed holdout or real-model assessment is claimed.

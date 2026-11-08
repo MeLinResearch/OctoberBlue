@@ -47,6 +47,11 @@ uv run pytest -q
 
 The five generic role IDs were explicitly chosen to replace the early
 creative names. They are final for the current implementation; do not restore
-the names from old narrative documents. The invoice benchmark is a mechanical
-toy fixture, not a replacement for the original proposed support-ticket
-benchmark. See docs/ALIGNMENT.md before declaring a milestone complete.
+the names from old narrative documents. The invoice benchmark is a mechanical toy fixture. A separate support-ticket
+benchmark now exists as an in-process, deterministic task family; the
+runtime and independent evidence boundary remain partial. See docs/ALIGNMENT.md before declaring a milestone complete.
+
+
+## Support-ticket benchmark
+
+Use `octoberblue ticket-benchmark` for the 40 authored synthetic ticket cases. Keep `TicketTaskSpecV1` and `TicketCaseV1` strict and versioned, never expose oracle fields to tool proposals, and preserve the separate-process deterministic verdict. This is development-only data with no sealed holdout or live model. Do not infer Docker isolation from the invoice-target path. See [TICKET_BENCHMARK.md](docs/TICKET_BENCHMARK.md).

@@ -165,3 +165,8 @@ limits. The fixed toy worker and its protocol are suitable for a bounded
 demonstration. They are NOT security-certified isolation for arbitrary
 adversarial code. Authenticated evidence, pinned image digests, host/kernel
 hardening and stronger sandboxing remain future security work.
+
+
+## Support-ticket task family (v0.2 synthetic development)
+
+`ticket_benchmark.py` is a distinct synthetic workload with 40 authored cases spanning three lower-trust surfaces. `TicketTaskSpecV1` fixes allowed ticket/account read and ticket resolution tool contracts; a separate evaluation-only `TicketOracle` specifies expected priority/reply and binds the task/case hashes. `TicketGateway` accepts strict argument shapes and permits *sandbox-only* simulated prohibited effects when explicitly enabled by its policy. It records one result per tool request, hashed source provenance, and a terminal ticket-state snapshot. `ticket_verifier_worker` is a separate subprocess that replays those state effects and checks the independent task oracle. Missing or inconsistent evidence fails closed. This is an additional task family, not a replacement for the invoice compatibility demo. The ticket target is currently in-process, so its runtime is not yet container-isolated or authenticated to the verifier. Full details: [TICKET_BENCHMARK.md](TICKET_BENCHMARK.md).

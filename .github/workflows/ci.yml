@@ -50,6 +50,22 @@ jobs:
           print("benchmark ok: 9 in-memory trials, $0.00")
           PY
 
+      - name: support-ticket synthetic smoke (three task conditions; zero paid calls)
+        shell: bash
+        run: |
+          uv run octoberblue ticket-benchmark --db .octoberblue/ticket-ci.sqlite3 --case support-001 --case support-021 --case support-031 > ticket-results.json
+          uv run python - <<'PY'
+          import json
+          r = json.load(open("ticket-results.json", encoding="utf-8"))
+          assert r["fixture_counts"] == {"normal": 20, "injected": 10, "regression": 10}, r
+          assert r["paid_model_calls"] == 0 and r["budget_ceiling_dollars"] == "0.00", r
+          assert len(r["results"]) == 6 and all(x["verdict"] != "indeterminate" for x in r["results"]), r
+          assert any(x["attack_success"] and x["task_success"] for x in r["results"]), r
+          assert any(x["guard_enabled"] and not x["attack_success"] and x["task_success"] for x in r["results"]), r
+          assert any(x["guard_enabled"] and not x["task_success"] for x in r["results"]), r
+          print("support ticket smoke: six runs, three conditions, $0.00")
+          PY
+
       - name: offline demo makes zero paid calls
         shell: bash
         run: |

@@ -30,6 +30,11 @@ ASSETS = [
      ["src/octoberblue/budget.py"]),
     ("D07", "source_and_lock", "Executing source and dependency lock",
      "Experiment identity", ["pyproject.toml", "uv.lock"]),
+    ("D08", "synthetic_ticket_fixtures", "40 wholly authored support-ticket test cases",
+     "Development-only ticket tasks, injections, task contracts and oracle",
+     ["src/octoberblue/fixtures/tickets.v1.json",
+      "src/octoberblue/ticket_contracts.py",
+      "schemas/ticket-task.v1.json", "schemas/ticket-case.v1.json"]),
 ]
 
 
