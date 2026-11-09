@@ -125,3 +125,12 @@ statuses remain partial: stronger OS privilege/target isolation, persistent
 witness write deadlines, key lifecycle, live role orchestration and sealed
 scientific evaluation are still pending. There is no new runtime dependency in
 the default core, no paid-model invocation and no real-model security finding.
+
+## Phase 2 offline provider records
+
+`ModelPinV1`, `PriceQuoteV1` and `ProviderCallRequestV1` now have generated schemas
+and strict immutable runtime validators. They are used by an offline admission
+preflight, not the synthetic ticket RPCs. Their independent operator approval
+anchors, supported billing scope and unimplemented invocation boundary are
+specified in [provider contracts](PROVIDER_CONTRACTS.md). They do not enable
+provider execution or alter Phase 1 manifests.

@@ -14,6 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 RIGHTS = "MIT, authored"
 
 ASSETS = [
+    ("D13", "provider_admission_contracts", "Operator-reviewed model pins and pricing records",
+     "Offline identity/pricing admission and exact cost bounds; no provider transport",
+     ["src/octoberblue/provider_contracts.py", "schemas/model-pin.v1.json",
+      "schemas/price-quote.v1.json", "schemas/provider-call-request.v1.json"]),
     ("D12", "contained_ticket_acceptance", "Authored fixed-worker boundary and acceptance gate",
      "Pinned image launch, resource probes and reproducible zero-model acceptance",
      ["src/octoberblue/contained_runtime.py", "src/octoberblue/containment_probe.py",
