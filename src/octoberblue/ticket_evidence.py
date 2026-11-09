@@ -52,7 +52,8 @@ def implementation_digest() -> str:
              "ticket_witness.py", "ticket_witness_worker.py", "ticket_verifier.py",
              "ticket_verifier_process.py", "ticket_verifier_worker.py", "target_runtime.py",
              "ticket_target_worker.py", "ticket_audit.py", "ticket_audit_worker.py",
-             "service_contracts.py", "process_boundary.py")
+             "service_contracts.py", "process_boundary.py", "contained_runtime.py",
+             "containment_probe.py")
     return digest({n: hashlib.sha256((root / n).read_bytes()).hexdigest() for n in names})
 
 
@@ -125,6 +126,33 @@ class RunManifestV1:
         return cls(**value)
 
 
+@dataclass(frozen=True)
+class RunManifestV2(RunManifestV1):
+    """Explicit contained-execution extension; v1 remains unchanged."""
+    execution_profile: str = "docker-json-v1"
+    verifier_image_id: str | None = None
+
+    def __post_init__(self):
+        base = {k: getattr(self, k) for k in RunManifestV1.__dataclass_fields__}
+        base["schema_version"] = "1.0"
+        RunManifestV1(**base)
+        if (self.schema_version != "2.0" or self.execution_profile != "docker-json-v1"
+                or self.target_runtime != "docker" or (self.verifier_image_id is not None and (
+                    type(self.verifier_image_id) is not str
+                    or not re.fullmatch(r"sha256:[a-f0-9]{64}", self.verifier_image_id)))):
+            raise ValueError("invalid contained execution manifest")
+
+
+def parse_run_manifest(value):
+    if type(value) is not dict:
+        raise ValueError("invalid manifest")
+    if value.get("schema_version") == "1.0":
+        return RunManifestV1.from_wire(value)
+    if value.get("schema_version") == "2.0":
+        return RunManifestV2.from_wire(value)
+    raise ValueError("unsupported manifest version")
+
+
 def seal(body: dict, key: bytes) -> dict:
     return {"body": body, "authentication": hmac.new(
         key, b"octoberblue.ticket.evidence.v1\x00" + canonical(body), hashlib.sha256,
@@ -163,7 +191,7 @@ def verify_witness_body(
             "schema_version", "manifest", "events", "event_chain", "receipts", "snapshot",
         } or body["schema_version"] != VERSION:
             return unknown
-        manifest = RunManifestV1.from_wire(body["manifest"])
+        manifest = parse_run_manifest(body["manifest"])
         if (digest(manifest.to_wire()) != expected_manifest_sha256
                 or manifest.run_id != run_id or manifest.task_sha256 != oracle.task_sha256
                 or manifest.case_sha256 != oracle.case_sha256
@@ -246,6 +274,8 @@ def verify_witness_body(
         if state != snapshot.to_wire():
             return unknown
         if manifest.target_runtime == "docker" and manifest.image_id is None:
+            return unknown
+        if isinstance(manifest, RunManifestV2) and manifest.verifier_image_id is None:
             return unknown
         return verdict
     except (ValueError, TypeError, KeyError, AttributeError, UnicodeError, RecursionError):

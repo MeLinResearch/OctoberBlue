@@ -784,7 +784,10 @@
                     ]
                   },
                   "transport": {
-                    "const": "subprocess"
+                    "enum": [
+                      "subprocess",
+                      "docker"
+                    ]
                   }
                 }
               }

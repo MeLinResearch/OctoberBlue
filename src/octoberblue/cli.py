@@ -42,6 +42,8 @@ def main(argv=None):
     )
     tickets.add_argument("--target-runtime", choices=("in_memory", "docker"), default="in_memory")
     tickets.add_argument("--target-image", default="octoberblue-target:v0.2")
+    tickets.add_argument("--verifier-runtime", choices=("subprocess", "docker"), default="subprocess")
+    tickets.add_argument("--verifier-image", default="octoberblue-trusted:v0.2")
     tickets.add_argument("--audit-signing-key", help="opt-in local Ed25519 private key file; requires audit extra")
     keygen = sub.add_parser("audit-keygen", help="create an operator-controlled audit signing identity")
     keygen.add_argument("--private-key", required=True)
@@ -55,6 +57,8 @@ def main(argv=None):
     replay.add_argument("--input", required=True)
     replay.add_argument("--trusted-public-key", required=True)
     replay.add_argument("--expected-manifest-sha256", required=True)
+    replay.add_argument("--verifier-runtime", choices=("subprocess", "docker"), default="subprocess")
+    replay.add_argument("--verifier-image", default="octoberblue-trusted:v0.2")
     export = sub.add_parser("promptfoo-export", help="export data-only Promptfoo test cases")
     export.add_argument("--attack", action="append", required=True, help="local AttackWireV1 JSON file")
     export.add_argument("--output", required=True, help="local tests.json path")
@@ -81,9 +85,18 @@ def main(argv=None):
                 return 0
             public_key = load_public_key(args.trusted_public_key)
             if args.action == "audit-replay":
+                image_id = None
+                if args.verifier_runtime == "docker":
+                    from .target_runtime import TargetRuntimeError, resolve_image_id
+                    try:
+                        image_id = resolve_image_id(args.verifier_image)
+                    except TargetRuntimeError:
+                        raise AuditError("audit_verifier_image_unavailable") from None
                 report = replay_in_subprocess(
                     load_pack(args.input), trusted_public_key=public_key,
                     expected_manifest_sha256=args.expected_manifest_sha256,
+                    runtime=args.verifier_runtime, image_id=image_id,
+                    timeout=12 if args.verifier_runtime == "docker" else 5,
                 )
                 print(json.dumps({**report.to_wire(), "paid_model_calls": 0}, indent=2))
                 return {"pass": 0, "fail": 1, "indeterminate": 2}[report.verification.verdict]
@@ -101,6 +114,8 @@ def main(argv=None):
             print(json.dumps({"verdict": "indeterminate", "reason_code": reason, "paid_model_calls": 0}))
             return 2
     if args.action == "ticket-benchmark":
+        if args.verifier_runtime == "docker" and args.target_runtime != "docker":
+            parser.error("Docker verification requires --target-runtime docker")
         audit_signing_key = None
         if args.audit_signing_key:
             from .ticket_audit import AuditError, load_signing_seed
@@ -125,6 +140,7 @@ def main(argv=None):
                 for outcome in paired_ticket_benchmark(
                     case, Defense("marker-v1"), target_runtime=args.target_runtime,
                     target_image=args.target_image, audit_signing_key=audit_signing_key,
+                    verifier_runtime=args.verifier_runtime, verifier_image=args.verifier_image,
                 ):
                     store.save(outcome)
                     if outcome.audit_pack is not None:
@@ -144,7 +160,7 @@ def main(argv=None):
                       for kind in ("normal", "injected", "regression")}
             print(json.dumps({
                 "mode": "synthetic_support_ticket", "target_runtime": args.target_runtime,
-                "fixture_counts": counts,
+                "verifier_runtime": args.verifier_runtime, "fixture_counts": counts,
                 "paid_model_calls": 0, "budget_ceiling_dollars": str(budget.ceiling),
                 "results": results, "audit_runs": audit_runs,
             }, indent=2))

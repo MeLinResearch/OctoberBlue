@@ -225,3 +225,32 @@ jobs:
       - run: uv run python -c "import importlib.util; assert importlib.util.find_spec('cryptography') is None"
       - run: uv run pytest -q --ignore=tests/test_ticket_audit.py
       - run: uv run octoberblue demo
+
+  phase1-acceptance:
+    name: Phase 1 contained execution acceptance / Ubuntu
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+          enable-cache: true
+      - run: uv sync --locked --extra dev --extra audit
+      - name: Hash-locked trusted image requirements are reproducible
+        run: |
+          uv export --locked --format requirements-txt --no-dev --extra audit --no-emit-project --output-file docker/trusted-requirements.txt
+          git diff --exit-code -- docker/trusted-requirements.txt
+      - name: Build fixed target and independent verifier
+        run: |
+          docker build -f docker/target.Dockerfile -t octoberblue-target:v0.2 .
+          docker build -f docker/trusted.Dockerfile -t octoberblue-trusted:v0.2 .
+      - name: Enforced controls, 80 matched trials, immutable records and offline replay
+        run: uv run --extra audit python -m octoberblue.phase1 --output phase1-audit
+      - name: Retain public acceptance evidence (no private key)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-audit
+          path: phase1-audit/
+          if-no-files-found: error

@@ -7,7 +7,7 @@ from dataclasses import asdict
 
 from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle
-from .ticket_evidence import verify_acquired_evidence
+from .ticket_evidence import implementation_digest, parse_run_manifest, verify_acquired_evidence
 from .ticket_verifier import TicketSnapshot, verify_ticket_evidence
 from .ticket_verifier_process import MAX_REQUEST_BYTES
 
@@ -43,6 +43,9 @@ def main() -> int:
             return 2
         oracle = TicketOracle(**data)
         if set(packet) == acquired_fields:
+            manifest = parse_run_manifest(packet["evidence"]["body"]["manifest"])
+            if manifest.implementation_sha256 != implementation_digest():
+                return 2
             verdict = verify_acquired_evidence(
                 packet["evidence"], key=bytes.fromhex(packet["authentication_key"]),
                 expected_manifest_sha256=packet["expected_manifest_sha256"],

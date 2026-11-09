@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octoberblue:run-manifest:v2",
+  "title": "Contained ticket run manifest v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "nonce",
+    "task_sha256",
+    "case_sha256",
+    "oracle_sha256",
+    "defense_sha256",
+    "gateway_sha256",
+    "implementation_sha256",
+    "target_runtime",
+    "image_id",
+    "guard_enabled",
+    "seed",
+    "max_calls",
+    "allow_simulated_breach",
+    "tool_contract_ref",
+    "verifier_ref",
+    "target_protocol",
+    "python_version",
+    "partition",
+    "paid_model_calls",
+    "budget_ceiling_dollars",
+    "execution_profile",
+    "verifier_image_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+    },
+    "nonce": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "task_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "case_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "oracle_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "defense_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "gateway_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "implementation_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "target_runtime": {
+      "const": "docker"
+    },
+    "image_id": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      ]
+    },
+    "guard_enabled": {
+      "type": "boolean"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "max_calls": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "allow_simulated_breach": {
+      "type": "boolean"
+    },
+    "tool_contract_ref": {
+      "const": "ticket-tools.v1"
+    },
+    "verifier_ref": {
+      "const": "ticket-verifier.v1"
+    },
+    "target_protocol": {
+      "const": "octoberblue.ticket.proposals.v1"
+    },
+    "python_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "partition": {
+      "const": "development"
+    },
+    "paid_model_calls": {
+      "const": 0
+    },
+    "budget_ceiling_dollars": {
+      "const": "0.00"
+    },
+    "execution_profile": {
+      "const": "docker-json-v1"
+    },
+    "verifier_image_id": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "target_runtime": {
+            "const": "in_memory"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "image_id": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

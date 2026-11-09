@@ -9,10 +9,10 @@ from .ticket_benchmark import TicketGateway, TicketGatewayPolicy, _TicketState
 from .ticket_contracts import digest
 from .ticket_evidence import (
     MAX_PACKET_BYTES,
-    RunManifestV1,
     canonical,
     decode,
     implementation_digest,
+    parse_run_manifest,
     seal,
 )
 
@@ -41,7 +41,7 @@ def main() -> int:
         )
         if initial["operation"] != "initialize":
             return 2
-        manifest = RunManifestV1.from_wire(initial["manifest"])
+        manifest = parse_run_manifest(initial["manifest"])
         if manifest.implementation_sha256 != implementation_digest():
             return 2
         key = bytes.fromhex(initial["key"])

@@ -14,15 +14,16 @@ import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from .contained_runtime import run_contained_worker
 from .process_boundary import ProcessBoundaryError, run_trusted_worker
 from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle, digest, load_ticket_cases
 from .ticket_evidence import (
     MAX_PACKET_BYTES,
-    RunManifestV1,
     canonical,
     decode,
     implementation_digest,
+    parse_run_manifest,
     verify_witness_body,
 )
 from .verifier import Verification
@@ -177,7 +178,7 @@ def authenticate_pack(pack: object, trusted_public_key: bytes,
             bytes.fromhex(pack["signature"]), DOMAIN + encoded,
         )
         body = pack["evidence_body"]
-        manifest = RunManifestV1.from_wire(body["manifest"])
+        manifest = parse_run_manifest(body["manifest"])
         if (type(expected_manifest_sha256) is not str
                 or not _HEX.fullmatch(expected_manifest_sha256)
                 or digest(manifest.to_wire()) != expected_manifest_sha256):
@@ -216,7 +217,7 @@ def replay_audit_pack(pack: object, *, trusted_public_key: bytes,
     except AuditError as error:
         return _unknown(str(error))
     try:
-        manifest = RunManifestV1.from_wire(body["manifest"])
+        manifest = parse_run_manifest(body["manifest"])
         context = dict(authenticated=True, run_id=manifest.run_id, anchor=expected_manifest_sha256)
         if manifest.implementation_sha256 != implementation_digest():
             return _unknown("audit_implementation_mismatch", **context)
@@ -234,7 +235,8 @@ def replay_audit_pack(pack: object, *, trusted_public_key: bytes,
 
 
 def replay_in_subprocess(pack: object, *, trusted_public_key: bytes,
-                         expected_manifest_sha256: str, timeout: float = 5.0) -> AuditReplay:
+                         expected_manifest_sha256: str, timeout: float = 5.0,
+                         runtime: str = "subprocess", image_id: str | None = None) -> AuditReplay:
     try:
         request_id = secrets.token_hex(16)
         request = canonical(service_message("replay_ticket", request_id, {
@@ -243,9 +245,21 @@ def replay_in_subprocess(pack: object, *, trusted_public_key: bytes,
         }))
         if len(request) > MAX_PACKET_BYTES:
             return _unknown("audit_pack_size")
-        process = run_trusted_worker(
-            "octoberblue.ticket_audit_worker", input=request, timeout=timeout,
-        )
+        if runtime == "docker":
+            body = authenticate_pack(pack, trusted_public_key, expected_manifest_sha256)
+            manifest = parse_run_manifest(body["manifest"])
+            if getattr(manifest, "verifier_image_id", None) != image_id or image_id is None:
+                return _unknown("audit_verifier_image_mismatch")
+            process = run_contained_worker(
+                "octoberblue.ticket_audit_worker", image_id=image_id,
+                input=request, timeout=timeout,
+            )
+        elif runtime == "subprocess":
+            process = run_trusted_worker(
+                "octoberblue.ticket_audit_worker", input=request, timeout=timeout,
+            )
+        else:
+            return _unknown("audit_invalid_runtime")
         if process.returncode != 0 or len(process.stdout) > 2048:
             return _unknown("audit_replay_worker_failed")
         result = service_payload(decode(process.stdout), operation="replay_ticket",

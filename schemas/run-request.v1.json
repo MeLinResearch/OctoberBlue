@@ -15,7 +15,14 @@
       "const": "1.0"
     },
     "manifest": {
-      "$ref": "octoberblue:run-manifest:v1"
+      "oneOf": [
+        {
+          "$ref": "octoberblue:run-manifest:v1"
+        },
+        {
+          "$ref": "octoberblue:run-manifest:v2"
+        }
+      ]
     },
     "ticket_id": {
       "type": "string",

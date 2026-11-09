@@ -1,5 +1,7 @@
 # Engineering requirements
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 OctoberBlue is built against 20 security invariants and a set of functional requirements. This page says, for each one, what v0.1 does today, which test checks it, and which milestone finishes it.
 
 Status means:
@@ -227,3 +229,15 @@ isolation; POSIX sessions and Windows best-effort cleanup are not hostile-code
 containment. Persistent witness write deadlines and containment review remain
 open. See [the exact budgets and limitations](PROCESS_BOUNDARIES.md). No paid
 model calls or real-agent security findings are introduced.
+
+## Current Phase 1 contained-profile verification
+
+For INV-01/03/09/10/11, `tests/test_contained_execution.py` adds explicit manifest
+version admission, no verifier fallback, fixed launch controls, witness write/read
+stall deadlines, early EOF/truncated frames, unclean seals, poisoned-channel
+rejection and refusal of missing cgroup enforcement. The Ubuntu `phase1-acceptance`
+job checks real controls and all 80 ticket arms; see [the acceptance matrix and
+retained evidence](PHASE1_ACCEPTANCE.md). INV-04/05/12/15/16/18 are additionally
+exercised by the matrix, guard-off gateway-denial control, frozen manifests,
+authenticated tool decisions and zero-model execution. These scoped checks do
+not upgrade the historical v0.1 invariant table or future real-agent requirements.

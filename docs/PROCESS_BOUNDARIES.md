@@ -1,5 +1,7 @@
 # Bounded target I/O and verifier startup (development)
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 OctoberBlue now bounds subprocess output **while reading**, rather than checking
 size only after `capture_output` has accumulated it in memory. This closes a
 resource-handling gap in the fixed Docker target and one-shot verifier/replay

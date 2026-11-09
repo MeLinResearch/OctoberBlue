@@ -1,5 +1,7 @@
 # OctoberBlue architecture alignment — November 2026
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 Basis: the November 2 implementation specification, later Dreaming decisions,
 and the actual code and test coverage. This is a traceability record, not a
 compliance certificate or a claim of real-model defense quality.
