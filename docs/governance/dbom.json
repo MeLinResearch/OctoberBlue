@@ -4,6 +4,21 @@
   "human_records": false,
   "assets": [
     {
+      "id": "D14",
+      "name": "openai_chat_profile",
+      "origin": "Authored snapshot-pinned text-only wire adapter",
+      "use": "Complete-context reservation bound, fixed request modes and provider metadata validation",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/openai_chat.py",
+          "sha256": "be2016c5f9c6fe1bc6689d46f54aad486d7f18f92741dd5475596902cae6c3a1"
+        }
+      ]
+    },
+    {
       "id": "D13",
       "name": "provider_admission_contracts",
       "origin": "Operator-reviewed model pins and pricing records",
