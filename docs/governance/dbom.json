@@ -4,6 +4,45 @@
   "human_records": false,
   "assets": [
     {
+      "id": "D12",
+      "name": "contained_ticket_acceptance",
+      "origin": "Authored fixed-worker boundary and acceptance gate",
+      "use": "Pinned image launch, resource probes and reproducible zero-model acceptance",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/contained_runtime.py",
+          "sha256": "68a35ef61dca6e1d8a3003d85aa1c1ab47bea7c8921316182efe31ba55addc99"
+        },
+        {
+          "path": "src/octoberblue/containment_probe.py",
+          "sha256": "0026c5584054a8107a8ae30329b2a121467c211bc1d22e0c19c0797152d11f07"
+        },
+        {
+          "path": "src/octoberblue/phase1.py",
+          "sha256": "cad086e86f89345f1adb1ae064d17ad33fa060ab336cba64990f584f1a3cafd1"
+        },
+        {
+          "path": "docker/target.Dockerfile",
+          "sha256": "a1499cb7f998c78b6f4c6f6601f8813bc8d986cc521a7cb8d5b13ac59138a0cf"
+        },
+        {
+          "path": "docker/trusted.Dockerfile",
+          "sha256": "d7de058b3dd559a814bd25f75fca6ab575edaab644b98fd8ed75934004b2741c"
+        },
+        {
+          "path": "docker/trusted-requirements.txt",
+          "sha256": "2dddd81b851c4addca4fd6a3d1e8315c0655b2f66411985b800c2c367cc8cc78"
+        },
+        {
+          "path": "schemas/run-manifest.v2.json",
+          "sha256": "7a02685aad4edcfe907c645fadeacf32912280bf882fea6289904399d6f5ded8"
+        }
+      ]
+    },
+    {
       "id": "D01",
       "name": "synthetic_task",
       "origin": "Authored invoice task and expected total",

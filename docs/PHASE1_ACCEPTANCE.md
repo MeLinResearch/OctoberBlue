@@ -5,6 +5,22 @@ boundary for **fixed, authored JSON-only support-ticket workers**. It is not a
 real-model security result. The default offline mode remains dependency-light
 and spends $0.00; Docker and audit signing are explicit opt-ins.
 
+The [retained CI acceptance report](evidence/phase1-ci-2026-11-09.json) records
+all nine gate checks passing, all 24 image-control probes passing and 80
+determinate reference-matched trials. It links the exact source revision, CI job
+and public artifact. This is an engineering acceptance result only.
+
+```mermaid
+flowchart LR
+    I[Lower-trust fixture content] --> T[Fixed target container]
+    T -->|untrusted JSON proposals| H[execution_harness]
+    H -->|sequenced private pipe| W[Trusted state-owning witness]
+    W -->|authenticated receipts and snapshot| V[independent_verifier container]
+    W -->|acquisition signature| P[Portable audit pack]
+    V --> O[Attempt / effect / utility / evidence verdict]
+    P -->|external public key and manifest anchor| R[Contained offline replay]
+```
+
 ## Reproduce the acceptance gate
 
 On a Linux Docker host with cgroup v2 resource enforcement:

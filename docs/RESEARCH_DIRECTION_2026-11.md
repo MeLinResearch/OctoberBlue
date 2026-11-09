@@ -93,3 +93,16 @@ An attention-worthy research hook to test, **not yet assert**, is: *How often do
 ## Anti-drift release gates
 
 Preserve the five generic machine role IDs and separate red/blue stores. Stay modular, Python/SQLite-first, $0 paid-model default. Any live provider call requires explicit operator opt-in, verified pricing, reservation and settlement. No unsealed holdout lessons, no external-data reuse without rights assessment, and no framework score quietly upgraded to a state-verified effect. Do not call any milestone “complete” until its source-trust boundary and acceptance tests exist.
+
+## E1 engineering acceptance update (November 9, 2026)
+
+The fixed JSON-only ticket profile now has a separate Docker verifier/replay,
+immutable image-bound manifest v2, a deadline-bounded persistent witness, and a
+reproducible fail-closed containment/evidence gate. Ubuntu CI passes all 24
+container-control probes, 80 determinate paired development trials, immutable
+record and deterministic replay checks, gateway denial independent of the guard,
+and signature/tamper/offline replay checks. [The scope review and retained CI
+evidence](PHASE1_ACCEPTANCE.md) identify exact boundaries and unsupported cases.
+This completes the Phase 1 fixed-worker dependency; arbitrary hostile native-code
+execution remains unauthorized. E2/E3 and the real-agent publication proof remain
+open. No scientific novelty or real-model security finding follows from this gate.

@@ -14,6 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 RIGHTS = "MIT, authored"
 
 ASSETS = [
+    ("D12", "contained_ticket_acceptance", "Authored fixed-worker boundary and acceptance gate",
+     "Pinned image launch, resource probes and reproducible zero-model acceptance",
+     ["src/octoberblue/contained_runtime.py", "src/octoberblue/containment_probe.py",
+      "src/octoberblue/phase1.py", "docker/target.Dockerfile", "docker/trusted.Dockerfile",
+      "docker/trusted-requirements.txt", "schemas/run-manifest.v2.json"]),
     ("D01", "synthetic_task", "Authored invoice task and expected total",
      "Task input and task-success check", ["src/octoberblue/contracts.py"]),
     ("D02", "synthetic_inputs", "Authored clean and injected inputs",
