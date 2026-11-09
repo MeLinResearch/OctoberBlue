@@ -205,8 +205,23 @@ def provider_schemas():
     return {"model-pin": pin, "price-quote": quote, "provider-call-request": request}
 
 
+def provider_record_schemas():
+    sha = {"type": "string", "pattern": "^" + SHA + "$"}
+    money = {"type": "string", "pattern": "^" + MONEY + "$"}
+    manifest = obj({"schema_version": {"const": "1.0"},
+                    "request": ref("provider-call-request"), "model_pin": ref("model-pin"),
+                    "pricing": obj({"quote_sha256": sha, "source_sha256": sha,
+                                    "input_dollars_per_million": money,
+                                    "output_dollars_per_million": money}),
+                    "payload_sha256": sha})
+    tokens = {"type": "integer", "minimum": 0, "maximum": MAX_TOKENS}
+    observation = obj({"schema_version": {"const": "1.0"}, "manifest_sha256": sha,
+                       "input_tokens": tokens, "output_tokens": tokens, "output_sha256": sha})
+    return {"provider-call-manifest": manifest, "provider-call-observation": observation}
+
+
 def main():
-    for name, schema in (build() | provider_schemas()).items():
+    for name, schema in (build() | provider_schemas() | provider_record_schemas()).items():
         value = {"$schema": "https://json-schema.org/draft/2020-12/schema",
                  "$id": PREFIX + name + ":v1", "title": name + " v1", **schema}
         (ROOT / "schemas" / (name + ".v1.json")).write_bytes(

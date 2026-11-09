@@ -163,4 +163,11 @@ host adapter, checks source/model pins, reserves and marks dispatch before one
 invocation, rechecks pricing freshness, validates identity/usage, and settles or
 freezes the ledger. Fake-adapter tests cover this path, including zero output,
 secret-bearing failures and the $0 default; no network adapter is enabled.
-Next dependency: durable content-free call manifests and response fingerprints.
+Durable content-free call manifests now bind exact model/adapter identity,
+approved pricing digests/rates and payload fingerprints before dispatch. Usage
+observations bind the manifest and output fingerprint before settlement; SQLite
+snapshot reads reject corruption/substitution and distinguish accounting state.
+Raw request/response content is excluded; hashes prove local consistency only.
+Next: a concrete version-pinned provider adapter with reviewed token counting,
+request limits and bounded transport, then native Inspect AI/AgentDojo execution
+with independently witnessed tool effects. No paid calls have been made.

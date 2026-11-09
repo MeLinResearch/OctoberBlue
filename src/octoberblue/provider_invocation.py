@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Protocol
 
 from .provider_contracts import MAX_TOKENS, ModelPinV1, _integer, admit_call
+from .provider_records import ProviderJournal
 
 MAX_PAYLOAD_BYTES = 1_000_000
 
@@ -97,6 +98,8 @@ def invoke_provider(budget, request, pin, quote, adapter, content, *,
     try:
         bound = admit_call(request, pin, quote, now=clock(), **approval)
         payload = _prepare(adapter, pin, request, content)
+        journal = ProviderJournal(budget)
+        manifest = journal.start(request, pin, quote, payload)
         key = request.run_id + ":" + request.call_id
         budget.reserve(key, bound)
         budget.begin_dispatch(key)
@@ -108,6 +111,7 @@ def invoke_provider(budget, request, pin, quote, adapter, content, *,
         _check_adapter(adapter, pin)
         reply = adapter.invoke(payload)
         _check_reply(reply, pin, request)
+        journal.observe(key, manifest, reply)
         budget.settle_dispatch(key, quote.usage_cost(reply.input_tokens, reply.output_tokens))
     except BaseException:
         _freeze(budget, key)

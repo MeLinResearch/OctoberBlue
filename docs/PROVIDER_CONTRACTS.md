@@ -67,13 +67,29 @@ identities in content-free call records, preserve the gateway and independent
 tool-effect verifier, and never treat a provider response as a trusted verdict.
 Positive opt-in in unit tests is not authorization for paid calls in a session.
 
+## Content-free call records
+
+Persist `ProviderCallManifestV1` before reservation/dispatch: request and exact
+model/adapter pin, reviewed quote/source digests and rates, and prepared-payload
+fingerprint. Omit raw content, source URLs and credentials. Persist a manifest-bound
+`ProviderCallObservationV1` with usage and output fingerprint before settlement;
+a record-write failure must prevent settlement and freeze a dispatched call.
+Use immutable insert-only manifests and one observation per manifest. Read records
+and accounting state in one SQLite snapshot, validating hashes, run identity,
+observation bindings and token bounds. Treat missing observations as missing
+evidence. An observation can coexist with `inflight` or `unknown`; it does not
+mean settlement succeeded. These are host-owned accounting records: consistency
+hashes neither authenticate an external host nor replace trusted tool-effect
+evidence or the independent verifier. Preserve externally retained pricing approvals.
+
 ## Wire and reproducibility
 
 Each record has schema version `1.0`, rejects unknown or missing fields, returns
 fresh wire dictionaries and hashes canonical JSON. Decode JSON using
 `parse_contract_json` before `from_wire` to reject duplicate keys and nonfinite
 JSON values. The generated `model-pin.v1.json`, `price-quote.v1.json` and
-`provider-call-request.v1.json` describe structural shape; Python admission also
+`provider-call-request.v1.json`, `provider-call-manifest.v1.json` and
+`provider-call-observation.v1.json` describe structural shape; Python admission also
 checks calendar dates, URLs, aliases, expiry, approval and cross-record bindings.
 JSON Schema validation alone never authorizes a request.
 
