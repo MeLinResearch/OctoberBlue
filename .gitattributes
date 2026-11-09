@@ -9,3 +9,11 @@
 *.svg text eol=lf
 *.Dockerfile text eol=lf
 *.txt text eol=lf
+
+# Collapse generated artifacts in GitHub diffs; preserve the EOL rules above.
+docs/governance/dbom.json linguist-generated=true
+schemas/*.json linguist-generated=true
+docs/evidence/** linguist-generated=true
+docker/trusted-requirements.txt linguist-generated=true
+docs/assets/*.svg linguist-generated=true
+uv.lock linguist-generated=true
