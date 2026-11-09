@@ -147,3 +147,11 @@ before dispatch, settles or freezes unknown charges, redacts artifacts and pins
 identities in live manifests, followed by a concrete version-pinned adapter and
 native Inspect AI/AgentDojo execution with independently witnessed effects.
 Paid calls still require explicit approval; no real-model security result exists.
+
+### Durable provider dispatch prerequisite
+
+The INV-18 ledger now commits `inflight` before dispatch, counts its reservation
+and freezes new reservations/dispatches until settlement. Lost callers leave a
+restart-safe freeze; failures/overruns retain `unknown` charges. Dispatch is
+conservative and serial per ledger. See [ledger design](BUDGET.md).
+Next dependency: the host-owned invocation coordinator and fake-adapter tests.
