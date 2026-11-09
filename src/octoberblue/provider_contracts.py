@@ -112,8 +112,13 @@ class PriceQuoteV1(_Contract):
 
     def upper_bound(self, input_tokens, output_tokens):
         """Exact USD arithmetic; no float conversion or rounding down."""
-        _integer(input_tokens, 0, MAX_TOKENS)
         _integer(output_tokens, 1, MAX_TOKENS)
+        return self.usage_cost(input_tokens, output_tokens)
+
+    def usage_cost(self, input_tokens, output_tokens):
+        """Price complete billed usage, including legitimate zero-token output."""
+        _integer(input_tokens, 0, MAX_TOKENS)
+        _integer(output_tokens, 0, MAX_TOKENS)
         with localcontext() as context:
             context.prec = 64
             total = (Decimal(input_tokens) * _money(self.input_dollars_per_million)

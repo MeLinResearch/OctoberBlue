@@ -155,3 +155,12 @@ and freezes new reservations/dispatches until settlement. Lost callers leave a
 restart-safe freeze; failures/overruns retain `unknown` charges. Dispatch is
 conservative and serial per ledger. See [ledger design](BUDGET.md).
 Next dependency: the host-owned invocation coordinator and fake-adapter tests.
+
+### Host-owned provider invocation coordinator
+
+The coordinator now prepares/counts the complete payload through an approved
+host adapter, checks source/model pins, reserves and marks dispatch before one
+invocation, rechecks pricing freshness, validates identity/usage, and settles or
+freezes the ledger. Fake-adapter tests cover this path, including zero output,
+secret-bearing failures and the $0 default; no network adapter is enabled.
+Next dependency: durable content-free call manifests and response fingerprints.
