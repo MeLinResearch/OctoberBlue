@@ -248,7 +248,7 @@
         },
         {
           "path": "src/octoberblue/ticket_witness.py",
-          "sha256": "bce1f4d7c9797b080c796ba04a169ab85c0b7d86da90633d0980a63629bfb3ad"
+          "sha256": "68eed55fb65359d65b6640e3a1c541cf9d1834dc55e12f3cb091989404218602"
         },
         {
           "path": "src/octoberblue/ticket_witness_worker.py",

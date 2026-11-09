@@ -156,6 +156,13 @@ class TicketWitness:
             raise WitnessError("witness_transport_failed") from None
 
     def _collect(self, request):
+        try:
+            return self._collect_checked(request)
+        except (WitnessError, ValueError, TypeError, KeyError):
+            self.close()
+            raise
+
+    def _collect_checked(self, request):
         response = self._rpc(request)
         if type(response) is not dict or set(response) != {"events"}:
             raise WitnessError("invalid_witness_response")

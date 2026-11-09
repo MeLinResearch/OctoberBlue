@@ -75,7 +75,8 @@ def test_inv11_contained_worker_has_no_mount_network_or_dynamic_module():
 
 
 @pytest.mark.parametrize('behavior', ['write_stall', 'read_stall', 'early_eof',
-                                     'truncated', 'extra_seal_frame', 'nonzero_seal'])
+                                     'truncated', 'invalid_events', 'extra_seal_frame',
+                                     'nonzero_seal'])
 def test_inv01_witness_deadline_poison_and_clean_seal(monkeypatch, baseline, behavior):
     import octoberblue.ticket_witness as client
     _, _, manifest = baseline
@@ -93,6 +94,9 @@ def test_inv01_witness_deadline_poison_and_clean_seal(monkeypatch, baseline, beh
             body += 'time.sleep(30)\n'
         elif behavior == 'early_eof':
             body += 'sys.exit(2)\n'
+        elif behavior == 'invalid_events':
+            body += ("print(json.dumps({'schema_version':'1.0','sequence':2,"
+                     "'result':{'events':[]}}),flush=True)\n")
         elif behavior == 'truncated':
             body += "sys.stdout.write('{');sys.stdout.flush()\n"
         else:
