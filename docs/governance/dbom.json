@@ -4,6 +4,25 @@
   "human_records": false,
   "assets": [
     {
+      "id": "D15",
+      "name": "provider_http_transport",
+      "origin": "Authored budget-gated fixed-endpoint provider transport",
+      "use": "Private credential pipes, durable single-send latch, HTTPS and bounded worker lifetime",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/openai_transport.py",
+          "sha256": "419154cd54a9c13fed7ef8a789bdf72ea543fd8345264f7fff8f52cf8db8c6d6"
+        },
+        {
+          "path": "src/octoberblue/provider_http_worker.py",
+          "sha256": "6fda447bf5ac8bafc3c2c9a52ea94cbec5fa327f68dc7cf9a5ad67e3cbc05dd4"
+        }
+      ]
+    },
+    {
       "id": "D14",
       "name": "openai_chat_profile",
       "origin": "Authored snapshot-pinned text-only wire adapter",
