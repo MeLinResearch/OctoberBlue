@@ -1,5 +1,7 @@
 # Versioned service contracts (development v1)
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 OctoberBlue now enforces a strict initial Task/Run/Trace/Guard/Dream **proposal**
 catalog across the active synthetic ticket services. This is boundary validation,
 not authentication, a live-agent protocol implementation, or completed Dreaming.

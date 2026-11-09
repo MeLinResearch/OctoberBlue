@@ -1,5 +1,7 @@
 # Architecture
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 This is the authoritative design for OctoberBlue. It describes the finished system. What v0.1 implements today is marked in [REQUIREMENTS.md](REQUIREMENTS.md); the build order is in [ROADMAP.md](ROADMAP.md).
 
 Nothing in v0.1 is a reason to drop a requirement here. A milestone that leaves something out moves it to a later milestone; it does not delete it.

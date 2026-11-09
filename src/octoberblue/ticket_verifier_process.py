@@ -5,6 +5,7 @@ import json
 import secrets
 import subprocess
 
+from .contained_runtime import run_contained_worker
 from .process_boundary import ProcessBoundaryError, run_trusted_worker
 from .service_contracts import service_message, service_payload
 from .ticket_contracts import TicketOracle
@@ -29,6 +30,8 @@ def verify_ticket_in_subprocess(
     evidence: dict | None = None,
     authentication_key: bytes | None = None,
     expected_manifest_sha256: str | None = None,
+    runtime: str = "subprocess",
+    image_id: str | None = None,
 ) -> Verification:
     try:
         if evidence is not None or authentication_key is not None or expected_manifest_sha256:
@@ -46,9 +49,23 @@ def verify_ticket_in_subprocess(
                              sort_keys=True, allow_nan=False)
         if len(request.encode("utf-8")) > MAX_REQUEST_BYTES:
             return _indeterminate()
-        response = run_trusted_worker(
-            "octoberblue.ticket_verifier_worker", input=request.encode("utf-8"), timeout=timeout,
-        )
+        if runtime == "docker":
+            from .ticket_evidence import RunManifestV2, parse_run_manifest
+            manifest = parse_run_manifest(evidence["body"]["manifest"])
+            if (not isinstance(manifest, RunManifestV2) or image_id is None
+                    or manifest.verifier_image_id != image_id):
+                return _indeterminate()
+            response = run_contained_worker(
+                "octoberblue.ticket_verifier_worker", image_id=image_id,
+                input=request.encode("utf-8"), timeout=timeout,
+            )
+        elif runtime == "subprocess":
+            response = run_trusted_worker(
+                "octoberblue.ticket_verifier_worker", input=request.encode("utf-8"),
+                timeout=timeout,
+            )
+        else:
+            return _indeterminate()
         if response.returncode != 0 or len(response.stdout) > 2048:
             return _indeterminate()
         value = service_payload(decode(response.stdout),
@@ -73,6 +90,6 @@ def verify_ticket_in_subprocess(
         ):
             return _indeterminate()
         return Verification(**value)
-    except (OSError, ValueError, TypeError, UnicodeError, subprocess.TimeoutExpired,
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError, subprocess.TimeoutExpired,
             ProcessBoundaryError, RecursionError):
         return _indeterminate()

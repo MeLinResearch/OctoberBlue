@@ -314,7 +314,7 @@ def test_inv10_self_consistent_forged_safe_history_requires_the_trusted_key(capt
     assert check(seal(body, capture['authentication_key']), capture).verdict == 'pass'
 
 
-def test_inv01_dead_witness_pipe_cleanup_preserves_failure_and_discards_key():
+def test_inv01_dead_witness_pipe_cleanup_preserves_failure_and_discards_key(monkeypatch):
     from types import SimpleNamespace
 
     closed = []
@@ -324,6 +324,7 @@ def test_inv01_dead_witness_pipe_cleanup_preserves_failure_and_discards_key():
             closed.append(True)
             raise BrokenPipeError('witness already exited')
 
+    monkeypatch.setattr("octoberblue.ticket_witness._stop", lambda process: None)
     witness = TicketWitness.__new__(TicketWitness)
     witness.key = b'x' * 32
     witness.process = SimpleNamespace(poll=lambda: 0, wait=lambda **kwargs: 0,

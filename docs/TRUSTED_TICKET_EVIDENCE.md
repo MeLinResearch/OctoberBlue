@@ -1,5 +1,7 @@
 # Trusted ticket evidence acquisition (development v1)
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 This implements the next E1 boundary for **synthetic support-ticket tools**.
 It does not establish real-model defense quality, hostile native-code safety,
 or hardware attestation. The invoice compatibility workload is unchanged.

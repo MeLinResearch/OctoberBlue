@@ -1,5 +1,7 @@
 # Engineering requirements
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 OctoberBlue is built against 20 security invariants and a set of functional requirements. This page says, for each one, what v0.1 does today, which test checks it, and which milestone finishes it.
 
 Status means:

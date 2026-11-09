@@ -1,12 +1,15 @@
 """Private-pipe client for the trusted state-owning ticket witness."""
 from __future__ import annotations
 
+import os
 import queue
 import secrets
 import subprocess
-import sys
+import tempfile
 import threading
+import time
 
+from .process_boundary import _stop, worker_command, worker_environment
 from .service_contracts import (
     RunRequestV1,
     validate_event,
@@ -22,7 +25,15 @@ class WitnessError(RuntimeError):
 
 class TicketWitness:
     def __init__(self, manifest: RunManifestV1, ticket_id: str, account_id: str,
-                 *, audit_signing_key: bytes | None = None):
+                 *, audit_signing_key: bytes | None = None, rpc_timeout: float = 5.0):
+        if type(rpc_timeout) not in (int, float) or not 0 < rpc_timeout <= 60:
+            raise ValueError("invalid witness deadline")
+        self.rpc_timeout = rpc_timeout
+        self.workspace = None
+        self._closed = False
+        self._failed = threading.Event()
+        self._read_done = threading.Event()
+        self._writers = []
         self.audit_pack = None
         self.audit_public_key = None
         if audit_signing_key is not None:
@@ -36,12 +47,18 @@ class TicketWitness:
         self.sealed = False
         self.sequence = 0
         try:
+            self.workspace = tempfile.TemporaryDirectory(prefix="octoberblue-witness-")
+            flags = {"start_new_session": True} if os.name == "posix" else {
+                "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP,
+            }
             self.process = subprocess.Popen(
-                [sys.executable, "-m", "octoberblue.ticket_witness_worker"],
+                worker_command("octoberblue.ticket_witness_worker"),
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                bufsize=-1,
+                bufsize=0, close_fds=True, cwd=self.workspace.name,
+                env=worker_environment(self.workspace.name), **flags,
             )
-            threading.Thread(target=self._read, daemon=True).start()
+            self._reader = threading.Thread(target=self._read, daemon=True)
+            self._reader.start()
             initial = {"operation": "initialize", "manifest": manifest.to_wire(),
                        "key": self.key.hex(), "ticket_id": ticket_id, "account_id": account_id}
             if audit_signing_key is not None:
@@ -57,15 +74,21 @@ class TicketWitness:
         try:
             while True:
                 raw = self.process.stdout.readline(MAX_PACKET_BYTES + 1)
-                self.responses.put(raw)
-                if not raw or len(raw) > MAX_PACKET_BYTES:
+                if not raw:
                     return
-        except (OSError, ValueError):
-            self.responses.put(b"")
+                if len(raw) > MAX_PACKET_BYTES or not raw.endswith(b"\n"):
+                    self._failed.set()
+                    return
+                self.responses.put_nowait(raw)
+        except (OSError, ValueError, queue.Full):
+            self._failed.set()
+        finally:
+            self._read_done.set()
 
     def _rpc(self, request):
-        if self.sealed:
+        if self.sealed or self._closed:
             raise WitnessError("witness_already_sealed")
+        deadline = time.monotonic() + self.rpc_timeout
         try:
             self.sequence += 1
             operation = request["operation"]
@@ -86,11 +109,50 @@ class TicketWitness:
             raw = canonical(envelope) + b"\n"
             if len(raw) > MAX_PACKET_BYTES:
                 raise WitnessError("witness_request_limit")
-            self.process.stdin.write(raw)
-            self.process.stdin.flush()
-            response = decode(self.responses.get(timeout=5))
-            return witness_response(response, sequence=self.sequence)
-        except (OSError, ValueError, TypeError, queue.Empty, RecursionError):
+            written = threading.Event()
+
+            def send():
+                try:
+                    remaining = memoryview(raw)
+                    while remaining:
+                        count = self.process.stdin.write(remaining)
+                        if not count:
+                            raise OSError("closed witness input")
+                        remaining = remaining[count:]
+                    self.process.stdin.flush()
+                except (OSError, ValueError):
+                    self._failed.set()
+                finally:
+                    written.set()
+
+            writer = threading.Thread(target=send, daemon=True)
+            self._writers.append(writer)
+            writer.start()
+            if not written.wait(max(0, deadline - time.monotonic())) or self._failed.is_set():
+                raise WitnessError("witness_write_failed")
+            while True:
+                if self._failed.is_set():
+                    raise WitnessError("witness_stream_failed")
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise WitnessError("witness_deadline")
+                try:
+                    response = decode(self.responses.get(timeout=min(remaining, 0.05)))
+                    break
+                except queue.Empty:
+                    if self._read_done.is_set():
+                        raise WitnessError("witness_early_eof") from None
+            result = witness_response(response, sequence=self.sequence)
+            if operation == "finalize":
+                self.process.wait(timeout=max(0.001, deadline - time.monotonic()))
+                if (not self._read_done.wait(max(0, deadline - time.monotonic()))
+                        or self.process.returncode != 0 or self._failed.is_set()
+                        or not self.responses.empty()):
+                    raise WitnessError("witness_unclean_seal")
+            return result
+        except (OSError, ValueError, TypeError, RecursionError,
+                subprocess.TimeoutExpired, WitnessError):
+            self.close()
             raise WitnessError("witness_transport_failed") from None
 
     def _collect(self, request):
@@ -139,20 +201,28 @@ class TicketWitness:
         return evidence
 
     def close(self):
-        if self.process is not None:
-            if self.process.poll() is None:
-                self.process.terminate()
-            try:
-                self.process.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
-                self.process.wait(timeout=2)
-            for pipe in (self.process.stdin, self.process.stdout):
-                if pipe is not None:
-                    try:
-                        pipe.close()
-                    except OSError:
-                        # Closing buffered stdin may flush into an already dead
-                        # witness. Cleanup must preserve the indeterminate result.
-                        pass
-        self.key = b""
+        if getattr(self, "_closed", False):
+            return
+        self._closed = True
+        try:
+            if self.process is not None:
+                try:
+                    _stop(self.process)
+                except (OSError, subprocess.TimeoutExpired):
+                    pass
+                for pipe in (self.process.stdin, self.process.stdout):
+                    if pipe is not None:
+                        try:
+                            pipe.close()
+                        except OSError:
+                            pass
+            for writer in getattr(self, "_writers", ()):
+                writer.join(timeout=0.2)
+            reader = getattr(self, "_reader", None)
+            if reader is not None:
+                reader.join(timeout=0.2)
+        finally:
+            self.key = b""
+            workspace = getattr(self, "workspace", None)
+            if workspace is not None:
+                workspace.cleanup()

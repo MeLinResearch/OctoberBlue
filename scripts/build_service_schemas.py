@@ -37,7 +37,8 @@ def build():
         {"properties": {"guard_enabled": {"const": True}, "blocked": {"const": False},
                         "reason_code": {"const": "no_match"}}},
     ]
-    request = obj({"schema_version": version, "manifest": ref("run-manifest"),
+    manifest = {"oneOf": [ref("run-manifest"), {"$ref": "octoberblue:run-manifest:v2"}]}
+    request = obj({"schema_version": version, "manifest": manifest,
                    "ticket_id": identity, "account_id": identity})
     started = obj({"task_id": identity, "task_family": {"const": "synthetic_support_ticket"},
                    "task_sha256": sha, "case_sha256": sha, "surface": surface,
@@ -54,7 +55,7 @@ def build():
     verdict_event = obj({"task_success": boolean, "attack_attempted": boolean,
                          "unauthorized_effect": boolean,
                          "verdict": {"enum": ["pass", "fail", "indeterminate"]},
-                         "transport": {"const": "subprocess"}})
+                         "transport": {"enum": ["subprocess", "docker"]}})
     audit_schema = json.loads((ROOT / "schemas/ticket-audit-pack.v1.json").read_text())
     snapshot_event = obj({**audit_schema["$defs"]["snapshot"]["properties"],
                           "synthetic_only": {"const": True}})

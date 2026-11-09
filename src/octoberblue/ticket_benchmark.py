@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from .benchmark import _Recorder
+from .contained_runtime import TRUSTED_IMAGE
 from .contracts import Defense, Outcome
 from .service_contracts import GuardDecisionV1
 from .target_runtime import TargetRuntimeError, _propose_request, resolve_image_id
@@ -28,7 +29,7 @@ from .ticket_contracts import (
     TicketOracle,
     digest,
 )
-from .ticket_evidence import RunManifestV1, implementation_digest
+from .ticket_evidence import RunManifestV1, RunManifestV2, implementation_digest
 from .ticket_target_worker import PROTOCOL as TICKET_PROTOCOL
 from .ticket_target_worker import propose
 from .ticket_verifier import TicketSnapshot
@@ -224,11 +225,17 @@ def run_ticket_benchmark(
     partition: Literal["development", "holdout"] = "development",
     target_runtime: Literal["in_memory", "docker"] = "in_memory",
     target_image: str = "octoberblue-target:v0.2",
+    verifier_runtime: Literal["subprocess", "docker"] = "subprocess",
+    verifier_image: str = TRUSTED_IMAGE,
     audit_signing_key: bytes | None = None,
     seed: int = 0,
     run_id: str | None = None,
 ) -> Outcome:
     """Run a deterministic toy worker; score only in the verifier subprocess."""
+    if verifier_runtime not in ("subprocess", "docker"):
+        raise ValueError("invalid verifier runtime")
+    if verifier_runtime == "docker" and target_runtime != "docker":
+        raise ValueError("contained verification requires the Docker target")
     if target_runtime not in ("in_memory", "docker"):
         raise ValueError("invalid target runtime")
     if partition != "development":
@@ -253,8 +260,18 @@ def run_ticket_benchmark(
             image_id = resolve_image_id(target_image)
         except TargetRuntimeError as error:
             target_failure = error.reason_code
-    manifest = RunManifestV1(
-        schema_version="1.0", run_id=run_id, nonce=secrets.token_hex(32),
+    verifier_image_id = None
+    if verifier_runtime == "docker":
+        try:
+            verifier_image_id = resolve_image_id(verifier_image)
+        except TargetRuntimeError:
+            target_failure = "verifier_image_identity_unavailable"
+    manifest_type = RunManifestV2 if verifier_runtime == "docker" else RunManifestV1
+    extension = ({"execution_profile": "docker-json-v1", "verifier_image_id": verifier_image_id}
+                 if verifier_runtime == "docker" else {})
+    manifest = manifest_type(
+        schema_version="2.0" if verifier_runtime == "docker" else "1.0",
+        run_id=run_id, nonce=secrets.token_hex(32),
         task_sha256=oracle.task_sha256, case_sha256=oracle.case_sha256,
         oracle_sha256=digest(oracle.__dict__),
         defense_sha256=digest({"defense_id": defense.defense_id,
@@ -262,7 +279,7 @@ def run_ticket_benchmark(
         gateway_sha256=policy.fingerprint(), implementation_sha256=implementation_digest(),
         target_runtime=target_runtime, image_id=image_id, guard_enabled=guard_enabled,
         seed=seed, max_calls=policy.max_calls,
-        allow_simulated_breach=policy.allow_simulated_breach,
+        allow_simulated_breach=policy.allow_simulated_breach, **extension,
     )
     witness = None
     try:
@@ -275,6 +292,7 @@ def run_ticket_benchmark(
             case=case, defense=defense, guard_enabled=guard_enabled, policy=policy,
             partition=partition, seed=seed, run_id=run_id, target_runtime=target_runtime,
             target_image=image_id, target_failure=target_failure, recorder=witness,
+            verifier_runtime=verifier_runtime, verifier_image_id=verifier_image_id,
         )
     except (WitnessError, OSError, ValueError, TypeError, KeyError):
         # A failed acquisition cannot be rescued using parent-owned state.
@@ -283,7 +301,7 @@ def run_ticket_benchmark(
         failed.emit("execution_harness", "witness_acquisition_failed")
         failed.emit("independent_verifier", "verdict", verdict="indeterminate",
                     task_success=False, attack_attempted=False, unauthorized_effect=False,
-                    transport="subprocess")
+                    transport=verifier_runtime)
         return Outcome(run_id, partition, guard_enabled, False, False, False, False,
                        "indeterminate", tuple(failed.events))
     finally:
@@ -293,7 +311,7 @@ def run_ticket_benchmark(
 
 def _run_witnessed_ticket(
     *, case, defense, guard_enabled, policy, partition, seed, run_id,
-    target_runtime, target_image, target_failure, recorder,
+    target_runtime, target_image, target_failure, recorder, verifier_runtime, verifier_image_id,
 ):
     spec = case.task_spec()
     oracle = TicketOracle.for_case(case)
@@ -387,6 +405,8 @@ def _run_witnessed_ticket(
         events, snapshot, oracle=oracle, run_id=run_id,
         evidence=evidence, authentication_key=recorder.key,
         expected_manifest_sha256=digest(recorder.manifest.to_wire()),
+        runtime=verifier_runtime, image_id=verifier_image_id,
+        timeout=12 if verifier_runtime == "docker" else 5,
     )
     audit_pack = recorder.audit_pack
     recorder = _Recorder(run_id)
@@ -394,7 +414,7 @@ def _run_witnessed_ticket(
     recorder.emit(
         "independent_verifier", "verdict", task_success=verdict.task_success,
         attack_attempted=verdict.attempted, unauthorized_effect=verdict.completed,
-        verdict=verdict.verdict, transport="subprocess",
+        verdict=verdict.verdict, transport=verifier_runtime,
     )
     return Outcome(
         run_id, partition, guard_enabled,
@@ -411,6 +431,8 @@ def paired_ticket_benchmark(
     policy: TicketGatewayPolicy | None = None,
     target_runtime: Literal["in_memory", "docker"] = "in_memory",
     target_image: str = "octoberblue-target:v0.2",
+    verifier_runtime: Literal["subprocess", "docker"] = "subprocess",
+    verifier_image: str = TRUSTED_IMAGE,
     audit_signing_key: bytes | None = None,
     seed: int = 0,
 ) -> tuple[Outcome, Outcome]:
@@ -418,7 +440,8 @@ def paired_ticket_benchmark(
     pair_id = uuid.uuid4().hex
     common = {"case": case, "defense": defense, "policy": policy, "seed": seed,
               "target_runtime": target_runtime, "target_image": target_image,
-              "audit_signing_key": audit_signing_key}
+              "audit_signing_key": audit_signing_key, "verifier_runtime": verifier_runtime,
+              "verifier_image": verifier_image}
     return (
         run_ticket_benchmark(**common, guard_enabled=False, run_id=f"{pair_id}-off"),
         run_ticket_benchmark(**common, guard_enabled=True, run_id=f"{pair_id}-on"),

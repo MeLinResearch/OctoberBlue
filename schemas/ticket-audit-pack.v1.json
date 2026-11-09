@@ -42,7 +42,14 @@
           "const": "1.0"
         },
         "manifest": {
-          "$ref": "run-manifest.v1.json"
+          "oneOf": [
+            {
+              "$ref": "run-manifest.v1.json"
+            },
+            {
+              "$ref": "octoberblue:run-manifest:v2"
+            }
+          ]
         },
         "events": {
           "type": "array",

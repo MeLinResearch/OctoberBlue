@@ -215,3 +215,7 @@ The active ticket services also enforce [versioned Run/Trace/Guard and manual
 Dream proposal contracts](docs/SERVICE_CONTRACTS.md), with correlated private
 RPCs and schema checks in CI. These contracts do not implement autonomous
 Dreaming or replace authenticated evidence and deterministic verification.
+
+## Trusted execution acceptance
+
+Phase 1 provides an opt-in fixed JSON-only Docker ticket target and separate contained verifier, authenticated witness receipts, versioned contracts and signed offline replay. [Reproduce the acceptance gate and review its trust assumptions](docs/PHASE1_ACCEPTANCE.md). CI retains the public signed packs and acceptance report. These are synthetic development checks, not evidence of real-model security.

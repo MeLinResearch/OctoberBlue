@@ -29,7 +29,7 @@
       "files": [
         {
           "path": "src/octoberblue/cli.py",
-          "sha256": "971a929de6498bfc88f5b7185ae6eca94fa76187d0ee4b402630c013877e02aa"
+          "sha256": "0b65b9844f7c9e2e3371213994c00e1e41558fb0f37a6f5f42718ecbc6950b82"
         }
       ]
     },
@@ -131,7 +131,7 @@
         },
         {
           "path": "src/octoberblue/target_runtime.py",
-          "sha256": "9c1b2fb07fe02c146700e542a96c342199a2530c148a5be4e28d61cd75b9ee8b"
+          "sha256": "643845dc1b0fd8ceb6e6d96cde7c397b23e18c8ae2f3c29426e614ed532a47e3"
         },
         {
           "path": "src/octoberblue/verifier_process.py",
@@ -139,7 +139,7 @@
         },
         {
           "path": "src/octoberblue/ticket_verifier_process.py",
-          "sha256": "4a2716bf9d8c0f0a5b03b3f51bcafdb65f85658aad2fc2054ed3a3141844387a"
+          "sha256": "72e7e7a296862fc0dd3c522863945c5afdb65e069647612fb841c7639629709e"
         }
       ]
     },
@@ -154,15 +154,15 @@
       "files": [
         {
           "path": "src/octoberblue/service_contracts.py",
-          "sha256": "c519bbfdd299d572d05dea892522e7c6e9405af1c0c8b2a7091fb4775f646812"
+          "sha256": "e02904db154bfb34f48202e3f92d3ccc7c143a61249ee2a92513944c7b2943a1"
         },
         {
           "path": "scripts/build_service_schemas.py",
-          "sha256": "c90b2d3beecda36bcdb00a22be624cceceedbdbaceccf18f1815768beadce7d5"
+          "sha256": "ff1f0fd64dd4c3c44fb928a96f2f5f1397ffc9e404ea4567d2568d21acc5f7d7"
         },
         {
           "path": "schemas/run-request.v1.json",
-          "sha256": "942afe596a0bf8af80852c2b18980935ed71c328f1d8656c9c2a06c7ec801ea8"
+          "sha256": "04c6a8ae01ca022663973bfb62e4230ee1fdda85118736e2cd499f318d80ecc2"
         },
         {
           "path": "schemas/run-record.v1.json",
@@ -170,7 +170,7 @@
         },
         {
           "path": "schemas/trace.v1.json",
-          "sha256": "5e4dbe958e69fdcd467da260b3d32b983ee4a07c8ad46a9c0499b86d52cd5dd1"
+          "sha256": "4fd1b5acd0c9c2aacfbf24bf43626366c70ce2d4efdbfb4a3cffba2b55cc1fa6"
         },
         {
           "path": "schemas/guard-decision.v1.json",
@@ -205,15 +205,15 @@
       "files": [
         {
           "path": "src/octoberblue/ticket_evidence.py",
-          "sha256": "80c1ef2f6277a8fadd23ef3a17672988936f1fdeea6fea408ac3a8eae7fc96a3"
+          "sha256": "472bef90eb8e7c2bae264cd56d423dbc2bd1a5ab05ad8c897237c721b049db2b"
         },
         {
           "path": "src/octoberblue/ticket_witness.py",
-          "sha256": "6b2af63599275e1e12bb5fe15fa71533abc377718b6001ed03ca6ae7a2041d2d"
+          "sha256": "bce1f4d7c9797b080c796ba04a169ab85c0b7d86da90633d0980a63629bfb3ad"
         },
         {
           "path": "src/octoberblue/ticket_witness_worker.py",
-          "sha256": "b24ace37f0443356f22575833690420e4039f3308e06bbb96aa81f62aad77c58"
+          "sha256": "68a4b6d76d01160eec1e10943dc29ecfcbc67463c32195821d98582f4ef607de"
         },
         {
           "path": "schemas/run-manifest.v1.json",
@@ -221,7 +221,7 @@
         },
         {
           "path": "src/octoberblue/ticket_audit.py",
-          "sha256": "8d2bd3ddc3d9d67512e4b7a3b4b6843d332bde5ef14db25d5161ae57b03aca9c"
+          "sha256": "836e4bf0d3937f201f702533af92f3f7a02a4544c00e02e914b2c6f703aa87ad"
         },
         {
           "path": "src/octoberblue/ticket_audit_worker.py",
@@ -229,7 +229,7 @@
         },
         {
           "path": "schemas/ticket-audit-pack.v1.json",
-          "sha256": "bb993d63b4658b109ccc28d92b3ea205239a07df2ad61a033e1a63c491e04efc"
+          "sha256": "d44a561c0f22ecc60167f06f63c5ffe69d777b024c8c04399ed64c28dd0abe00"
         }
       ]
     },

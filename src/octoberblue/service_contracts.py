@@ -117,11 +117,11 @@ class _FrozenWire:
 @dataclass(frozen=True)
 class RunRequestV1(_FrozenWire):
     def _validate(self, value):
-        from .ticket_evidence import RunManifestV1
+        from .ticket_evidence import parse_run_manifest
 
         _keys(value, ("schema_version", "manifest", "ticket_id", "account_id"))
         _version(value["schema_version"])
-        RunManifestV1.from_wire(value["manifest"])
+        parse_run_manifest(value["manifest"])
         if any(not _text(value[k], _ID) for k in ("ticket_id", "account_id")):
             raise ValueError("invalid run source identifiers")
 
@@ -224,7 +224,7 @@ def validate_event(event):
                        "transport"))
         validate_verdict(detail["task_success"], detail["attack_attempted"],
                          detail["unauthorized_effect"], detail["verdict"])
-        if detail["transport"] != "subprocess":
+        if detail["transport"] not in ("subprocess", "docker"):
             raise ValueError("invalid verifier transport")
 
 
@@ -279,14 +279,14 @@ class RunRecordV1(_FrozenWire):
             if value["verdict"] != "indeterminate" or value["audit_pack"] is not None:
                 raise ValueError("conclusive ticket run lacks evidence")
         else:
-            from .ticket_evidence import RunManifestV1
+            from .ticket_evidence import parse_run_manifest
 
             _keys(evidence, ("body", "authentication"))
             if not _text(evidence["authentication"], _SHA):
                 raise ValueError("invalid acquisition authentication field")
             body = evidence["body"]
             validate_evidence_body_shape(body)
-            manifest = RunManifestV1.from_wire(body["manifest"])
+            manifest = parse_run_manifest(body["manifest"])
             if (manifest.run_id != value["run_id"] or manifest.partition != value["partition"]
                     or manifest.guard_enabled != value["guard_enabled"]
                     or body["events"] != value["events"][:-1]):
@@ -465,12 +465,12 @@ def service_payload(message, *, operation, request_id=None, response=False):
 
 def validate_evidence_body_shape(body):
     """Structural admission only; authentication and state replay stay independent."""
-    from .ticket_evidence import RunManifestV1
+    from .ticket_evidence import parse_run_manifest
     from .ticket_verifier import TicketSnapshot
 
     _keys(body, ("schema_version", "manifest", "events", "event_chain", "receipts", "snapshot"))
     _version(body["schema_version"])
-    manifest = RunManifestV1.from_wire(body["manifest"])
+    manifest = parse_run_manifest(body["manifest"])
     TraceV1.from_wire({"schema_version": VERSION, "run_id": manifest.run_id,
                       "events": body["events"]})
     TicketSnapshot.from_wire(body["snapshot"])

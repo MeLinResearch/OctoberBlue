@@ -1,5 +1,7 @@
 # Synthetic support-ticket benchmark (v0.2)
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 ## Goal and status
 
 This is the authored, **no-provider, no-network** support-ticket workload from

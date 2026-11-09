@@ -19,6 +19,7 @@ from .target_worker import MAX_REQUEST_BYTES, PROTOCOL
 
 MAX_RESPONSE_BYTES = 16_384
 _DEFAULT_IMAGE = "octoberblue-target:v0.2"
+_TRUSTED_IMAGE = "octoberblue-trusted:v0.2"
 _DIGEST = re.compile(r"sha256:[a-f0-9]{64}\Z")
 _TOOL = re.compile(r"[a-z][a-z0-9_]{0,63}\Z")
 
@@ -84,18 +85,8 @@ def _propose_request(
         raise TargetRuntimeError("target_input_too_large")
 
     name = "octoberblue-target-" + uuid.uuid4().hex
-    command = [
-        "docker", "run", "--rm", "--interactive", "--pull=never",
-        "--name=" + name,
-        "--network=none", "--ipc=none", "--read-only",
-        "--cap-drop=ALL", "--security-opt=no-new-privileges=true",
-        "--security-opt=seccomp=builtin", "--user=65534:65534",
-        "--memory=128m", "--memory-swap=128m", "--cpus=0.5",
-        "--pids-limit=32", "--ulimit=nofile=64:64",
-        "--tmpfs=/tmp:rw,noexec,nosuid,size=8m",
-        image, "python", "-m", ("octoberblue.ticket_target_worker" if ticket
-                                else "octoberblue.target_worker"),
-    ]
+    command = target_command(image, name, "octoberblue.ticket_target_worker" if ticket
+                             else "octoberblue.target_worker")
     try:
         completed = run_bounded(command, input=request.encode("utf-8"), timeout=timeout,
                                 stdout_limit=MAX_RESPONSE_BYTES, stderr_limit=4096)
@@ -145,7 +136,9 @@ def _propose_request(
 
 def resolve_image_id(image: str) -> str:
     """Resolve the operator-selected local image once; execute only its immutable ID."""
-    if image != _DEFAULT_IMAGE and (type(image) is not str or not _DIGEST.fullmatch(image)):
+    if image not in (_DEFAULT_IMAGE, _TRUSTED_IMAGE) and (
+        type(image) is not str or not _DIGEST.fullmatch(image)
+    ):
         raise ValueError("use the local tagged image or a pinned sha256 image ID")
     try:
         response = run_bounded(
@@ -158,3 +151,23 @@ def resolve_image_id(image: str) -> str:
         return value
     except (ProcessBoundaryError, UnicodeError) as error:
         raise TargetRuntimeError("image_identity_unavailable") from error
+
+
+def target_command(image, name, module):
+    if module not in ("octoberblue.target_worker", "octoberblue.ticket_target_worker",
+                      "octoberblue.containment_probe"):
+        raise ValueError("unapproved fixed target module")
+    args = [
+        "docker", "run", "--rm", "--interactive", "--pull=never",
+        "--name=" + name,
+        "--network=none", "--ipc=none", "--read-only",
+        "--cap-drop=ALL", "--security-opt=no-new-privileges=true",
+        "--security-opt=seccomp=builtin", "--user=65534:65534",
+        "--memory=128m", "--memory-swap=128m", "--cpus=0.5",
+        "--pids-limit=32", "--ulimit=nofile=64:64",
+        "--tmpfs=/tmp:rw,noexec,nosuid,size=8m",
+    ]
+    for variable in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
+                     "http_proxy", "https_proxy", "all_proxy", "no_proxy"):
+        args.extend(("--env", variable + "="))
+    return [*args, image, "python", "-I", "-B", "-m", module]

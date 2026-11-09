@@ -1,5 +1,7 @@
 # Roadmap
 
+**Current Phase 1 acceptance (2026-11-09):** see [the implemented contained profile, reproducible gate and explicit limits](PHASE1_ACCEPTANCE.md). Historical milestone tables below remain historical; live agents and autonomous Dreaming are not implemented.
+
 Current research-informed positioning and proof gates: [RESEARCH_DIRECTION_2026-11.md](RESEARCH_DIRECTION_2026-11.md). This is an audit of missing capabilities, **not a claim of newly implemented features**.
 
 Each milestone ends with an acceptance gate: every invariant it owns in [REQUIREMENTS.md](REQUIREMENTS.md) is **Tested**, and CI is green on Linux, macOS and Windows. Presentation and documentation are updated in every milestone, not saved for the end.
