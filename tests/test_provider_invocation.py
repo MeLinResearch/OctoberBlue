@@ -7,10 +7,13 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
 
 from octoberblue.budget import Budget
 from octoberblue.provider_contracts import ModelPinV1, PriceQuoteV1, ProviderCallRequestV1
 from octoberblue.provider_invocation import ProviderInvocationError, ProviderReply, invoke_provider
+from octoberblue.provider_records import ProviderJournal, digest
 
 NOW = 1_794_225_600
 
@@ -31,6 +34,7 @@ class FakeAdapter:
 
     def invoke(self, payload):
         assert self.budget.conn.execute("SELECT state FROM spend").fetchone()[0] == "inflight"
+        assert self.budget.conn.execute("SELECT manifest_json FROM provider_calls").fetchone()
         assert json.loads(payload)["max_output_tokens"] == 10
         self.calls += 1
         if self.failure:
@@ -155,3 +159,80 @@ def test_inv09_provider_hashes_source_even_when_adapter_self_reports_approved_pi
     with pytest.raises(ProviderInvocationError, match="preflight_rejected"):
         invoke_provider(budget, request, pin, quote, adapter, b"private-input", **options)
     assert adapter.calls == 0 and budget.committed() == 0
+
+
+def test_inv09_inv17_call_records_bind_exact_identity_and_exclude_content(call):
+    dispatch(call)
+    record = ProviderJournal(call[0]).get("run:call")
+    assert record["manifest"]["model_pin"] == call[2].to_wire()
+    assert record["manifest"]["pricing"]["quote_sha256"] == call[3].sha256
+    assert record["observation"]["output_sha256"] == digest(b"private-output")
+    assert record["accounting_state"] == "settled"
+    assert all(secret not in json.dumps(record) for secret in
+               ("private-input", "private-output", "source_url", "api_key"))
+    with sqlite3.connect(call[0].conn.execute("PRAGMA database_list").fetchone()[2]) as conn:
+        assert ProviderJournal(Budget(conn, "1")).get("run:call") == record
+    registry = Registry()
+    schemas = [json.loads(p.read_bytes()) for p in
+               (Path(__file__).parents[1] / "schemas").glob("*.json")]
+    for schema in schemas:
+        if "$id" in schema:
+            registry = registry.with_resource(schema["$id"], Resource.from_contents(schema))
+    for field in ("manifest", "observation"):
+        schema_id = "octoberblue:provider-call-" + field + ":v1"
+        schema = next(s for s in schemas if s.get("$id") == schema_id)
+        Draft202012Validator(schema, registry=registry).validate(record[field])
+
+
+@pytest.mark.parametrize("tamper", ["hash", "run", "observation", "usage", "delete"])
+def test_inv09_provider_records_fail_closed_on_corruption_or_substitution(call, tamper):
+    dispatch(call)
+    journal = ProviderJournal(call[0])
+    record = journal.get("run:call")
+    field = "manifest" if tamper in ("hash", "run") else "observation"
+    value = record[field]
+    if tamper == "run":
+        value["request"]["run_id"] = "substitute"
+    elif tamper == "observation":
+        value["manifest_sha256"] = "c" * 64
+    elif tamper == "usage":
+        value["input_tokens"] = 1001
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":"))
+    sha = "d" * 64 if tamper == "hash" else digest(raw.encode())
+    if tamper == "delete":
+        raw, sha = None, None
+    with call[0].conn:
+        call[0].conn.execute(
+            f"UPDATE provider_calls SET {field}_json=?,{field}_sha256=? WHERE id='run:call'",
+            (raw, sha))
+    with pytest.raises(ValueError):
+        journal.get("run:call")
+
+
+@pytest.mark.parametrize("stage", ["manifest", "observation"])
+def test_inv17_inv18_record_write_failure_prevents_settlement_and_hides_db_error(call, stage):
+    journal = ProviderJournal(call[0])
+    action = "INSERT" if stage == "manifest" else "UPDATE OF observation_json"
+    call[0].conn.execute(f"CREATE TRIGGER reject_record BEFORE {action} ON provider_calls "
+                         "BEGIN SELECT RAISE(ABORT, 'secret-db-error'); END")
+    call[0].conn.commit()
+    with pytest.raises(ProviderInvocationError) as caught:
+        dispatch(call)
+    assert "secret-db-error" not in "".join(traceback.format_exception(caught.value))
+    assert call[4].calls == (stage == "observation")
+    if stage == "observation":
+        assert journal.get("run:call")["accounting_state"] == "unknown"
+    else:
+        assert call[0].committed() == 0
+
+
+def test_inv18_observation_alone_never_means_settled(call, monkeypatch):
+    def fail(*args):
+        raise OSError("secret-settlement-error")
+
+    monkeypatch.setattr(call[0], "settle_dispatch", fail)
+    with pytest.raises(ProviderInvocationError):
+        dispatch(call)
+    record = ProviderJournal(call[0]).get("run:call")
+    assert record["observation"] is not None
+    assert record["accounting_state"] == "unknown"

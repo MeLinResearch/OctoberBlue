@@ -18,11 +18,23 @@
         },
         {
           "path": "src/octoberblue/provider_invocation.py",
-          "sha256": "d137c70a797ad5537696a1061dc3cec3c40f01f272362af921037c4f09791fdb"
+          "sha256": "22266e9ce58479b97de935f311d33562578139c7fb4f3785a0bb470a1107c5bf"
+        },
+        {
+          "path": "src/octoberblue/provider_records.py",
+          "sha256": "eb60f0883f1b695f4c198b52e210771d3095b50598c6400f94f4c20049feed99"
         },
         {
           "path": "schemas/model-pin.v1.json",
           "sha256": "26a41f3699ce52cb5fade512625dd2c64b98e719b59d38832cb5ad63d25a60c7"
+        },
+        {
+          "path": "schemas/provider-call-manifest.v1.json",
+          "sha256": "0b8188cef4a29154d0245cf4964927728f5c3099753b54700aee5d18eee5da4b"
+        },
+        {
+          "path": "schemas/provider-call-observation.v1.json",
+          "sha256": "69c069a62cfc7758d5dcec679e742f5c691a025af2c1117731757296d36ae29f"
         },
         {
           "path": "schemas/price-quote.v1.json",
@@ -228,7 +240,7 @@
         },
         {
           "path": "scripts/build_service_schemas.py",
-          "sha256": "952bf0c8e19e5bfa26bbb31f2e8f1d1e0cfcaa40f72cc1f274a6c1f1b594b6aa"
+          "sha256": "da5aa15c0a5d5daad9e3212b267cc9cf70eb55f24294297baa089286dfd40b02"
         },
         {
           "path": "schemas/run-request.v1.json",
