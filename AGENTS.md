@@ -1,57 +1,45 @@
-# OctoberBlue — AI coding-agent instructions
+# OctoberBlue — contributor instructions
 
-**Implemented now (v0.1):** offline synthetic harness, in-process gateway, deterministic verdict from events, SQLite run records with integrity hashes, guard-on/off comparison, spend reservations with a $0.00 default, separate red/blue memory with evidence-linked proposals and manual promotion.
+- Read [the roadmap](docs/ROADMAP.md) for implementation status and dependency order.
+- Read [the requirements](docs/REQUIREMENTS.md) for invariant status and acceptance tests.
+- Respect [the fixed-worker containment scope](docs/PHASE1_ACCEPTANCE.md); do not infer arbitrary hostile-code containment from a container profile.
 
-**v0.2 in progress:** `benchmark.py` / `verifier.py` demonstrate both successful synthetic task-policy violations and blocked ones in a purely in-memory sandbox; the benchmark now uses the separate-process verifier by default and fails closed; opt-in restricted Docker invoice and ticket proposal workers are available, the ticket gateway now uses a state-owning witness subprocess and ephemeral authenticated acquisition. Optional acquisition-time Ed25519 ticket audit packs and offline replay are available with the `audit` extra and explicit operator keys. Initial Run/Trace/Guard/Dream proposal contracts and versioned private service envelopes are enforced; see docs/SERVICE_CONTRACTS.md. One-shot target/verifier pipes are streaming-bounded and verifiers use isolated Python startup with minimal environments; see docs/PROCESS_BOUNDARIES.md. The opt-in docker-json-v1 profile additionally contains the fixed target and verifier, with a strict Linux cgroup acceptance gate; see docs/PHASE1_ACCEPTANCE.md. Arbitrary hostile-code containment, separate witness OS identity, operational key lifecycle management and future live-agent/Dream batch contracts remain unimplemented.
+## Preserve the trust boundaries
 
-**Not implemented:** live models, autonomous Dreaming, arbitrary-code sandbox, research tools, operator console. The target design is [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); build order is [docs/ROADMAP.md](docs/ROADMAP.md). Don't drop an architecture requirement because v0.1 lacks it.
+- Use only these agent role IDs: `red_researcher`, `red_attacker`, `blue_researcher`, `blue_guard`, `target_agent`. Use `execution_harness` and `independent_verifier` for trusted non-agents.
+- Never let agent outputs edit the verifier, gateway policy, budgets, holdouts or active defense.
+- Admit attacks only through declared lower-trust surfaces. Keep the gateway enabled when `guard_enabled=false`.
+- Keep red and blue private memory separate; exclude holdout data from learning. Require operator approval for memory promotion, between runs only. Do not describe manual proposal APIs as autonomous Dreaming.
+- Require explicit operator opt-in, verified pricing, reservation before invocation, settlement after invocation and a hard stop for every paid call. Preserve the **$0.00 default model budget**. Do not make paid API calls without explicit approval.
+- Derive verdicts from independently acquired tool effects and state, never model claims or imported framework scores. Treat external reports as observations; keep framework design in [COMPATIBILITY.md](docs/COMPATIBILITY.md).
+- Keep `TicketTaskSpecV1` and `TicketCaseV1` strict and versioned. Never expose oracle fields to tool proposals. Preserve separate-process deterministic verification; use `octoberblue ticket-benchmark` for development fixture checks.
+- Consult [ARCHITECTURE.md](docs/ARCHITECTURE.md) and [ALIGNMENT.md](docs/ALIGNMENT.md) before changing boundaries or declaring milestone acceptance.
 
-## Names
+## Keep each PR independently reviewable
 
-Canonical role IDs: `red_researcher`, `red_attacker`, `blue_researcher`, `blue_guard`, `target_agent`. Trusted non-agents: `execution_harness`, `independent_verifier`. Use only these, in code and docs.
+- Address one dependency per PR. Aim for at most 400 hand-written changed lines, excluding generated files. Split larger steps into stacked PRs that each pass CI.
+- Commit generated files separately from hand-written code. Identify generated files in the PR description; retain the generated-file attributes in `.gitattributes`.
+- Add no function longer than 60 lines. Do not grow an existing function already over 60 lines; split it in the same PR if it must change. Apply the strictest standard to verifier, witness, evidence, gateway, budget and provider invocation code: small named functions, one check each.
+- Include a **Reviewer** section in every PR description: what changed in 2–3 sentences; affected invariant IDs; whether a trust boundary is touched and which one; files to read first in order; exact verification commands; generated files in the diff. Follow [.github/pull_request_template.md](.github/pull_request_template.md).
+- Merge only after all required checks pass against the PR head.
 
-## Invariants you must not break
+## Keep documentation ownership clear
 
-- Agent outputs never edit the verifier, gateway policy, budgets, holdouts or the active defense.
-- Attack inputs enter only lower-trust surfaces. `guard_enabled=false` never disables the gateway.
-- Red and blue private memory stay separate. No holdout data in learning.
-- Memory promotion is operator-approved, between runs only. Don't describe the proposal API as Dreaming.
-- Every paid call needs operator opt-in, verified pricing, reservation before invocation, settlement after, and a hard stop. **Default model budget: $0.00.**
+- Keep implementation status only in [ROADMAP.md](docs/ROADMAP.md), and per-invariant status only in [REQUIREMENTS.md](docs/REQUIREMENTS.md).
+- Use other docs for design and link to those two status owners. Never restate implementation status elsewhere, append progress to this file, or turn it into a progress log.
+- Edit only the docs that own the topic changed by the PR.
+- Never claim live-model security from synthetic fixtures. Do not invent benchmarks, performance figures or decorative metrics.
+- Name external frameworks, tools and providers only where the project uses or integrates them. Never imply outside contribution, review or endorsement. Record exact model IDs in run manifests.
 
-The full list, with tests and status, is [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md).
+## Verify changes
 
-## Before and after a change
-
-```bash
-uv sync --extra dev
+```sh
+uv sync --locked --extra dev --extra audit
 uv run ruff check .
 uv run pytest -q
 ```
 
-- New behavior gets a test named after its invariant (`test_inv<NN>_...`), and its status in REQUIREMENTS.md is updated.
-- If a file in the DBOM changed: `uv run python scripts/build_dbom.py`.
-- If a status or count changed: regenerate the artwork with `docs/assets/build/build_art.py`.
-
-## Documentation rules
-
-- Don't claim live-model defense quality from fixture tests.
-- No invented benchmarks, performance numbers or decorative metrics.
-- Name external tools, frameworks and model providers only where OctoberBlue actually uses or integrates them, the way a dependency list does. Never present an outside organization as a contributor, reviewer or endorser. Record exact model IDs in run manifests.
-
-## External framework boundary
-
-`agentdojo_adapter.py` imports external run reports as data-only observations. Never promote externally reported utility/security scores to trusted `Outcome` verdicts. Keep framework integration details in `docs/COMPATIBILITY.md`. Upstream runner and oracle integration remain separate work.
-
-
-## Intentional design decisions
-
-The five generic role IDs were explicitly chosen to replace the early
-creative names. They are final for the current implementation; do not restore
-the names from old narrative documents. The invoice benchmark is a mechanical toy fixture. A separate support-ticket
-benchmark now exists as an in-process, deterministic task family; the
-runtime and independent evidence boundary remain partial. See docs/ALIGNMENT.md before declaring a milestone complete.
-
-
-## Support-ticket benchmark
-
-Use `octoberblue ticket-benchmark` for the 40 authored synthetic ticket cases. Keep `TicketTaskSpecV1` and `TicketCaseV1` strict and versioned, never expose oracle fields to tool proposals, and preserve the separate-process deterministic verdict. This is development-only data with no sealed holdout or live model. Do not infer Docker isolation from the invoice-target path. See [TICKET_BENCHMARK.md](docs/TICKET_BENCHMARK.md).
+- Give new behavior an invariant-named test (`test_inv<NN>_...`); update its owning entry in REQUIREMENTS.md.
+- Regenerate affected DBOM entries with `uv run python scripts/build_dbom.py`.
+- Regenerate wire schemas with `uv run python scripts/build_service_schemas.py` when their definitions change.
+- Regenerate artwork with `docs/assets/build/build_art.py` if its displayed status or counts change; keep generated output in a separate commit.
