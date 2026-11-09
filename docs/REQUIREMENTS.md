@@ -57,7 +57,7 @@ Each invariant must have an automated test before its milestone closes.
 | INV-15 | The fields are separate, but "completed" cannot occur yet (see INV-10). |
 | INV-17 | A secret-pattern scan of tracked files. Log and artifact redaction arrives with live providers in v0.3. |
 
-INV-18 is single-connection SQLite accounting. It is not safe for concurrent paid calls; v0.3 hardens it before any provider is enabled.
+INV-18 now serializes file-backed SQLite reservations and settlements across connections with BEGIN IMMEDIATE, pins one ledger ceiling, and blocks new calls after an unknown charge, including after reconnect. Tests in `tests/test_budget_concurrency.py` cover contention, ceiling disagreement, restart, nested transactions and autocommit rollback. This is accounting only: verified pricing, provider invocation and operator reconciliation remain unimplemented; no paid calls are enabled.
 
 ## Functional requirements
 

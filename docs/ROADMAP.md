@@ -115,3 +115,20 @@ advances trusted execution without claiming OS sandbox acceptance. Next:
 persistent witness write deadlines, verifier privilege/network isolation and
 reviewed containment, including Windows job/process-tree guarantees. See
 [process boundaries](PROCESS_BOUNDARIES.md). Provider execution remains disabled.
+
+### Phase 2 concurrent spend prerequisite (November 9, 2026)
+
+Reservations now acquire a SQLite writer lock before checking committed spend.
+One persisted ceiling applies to every connection to the same ledger; conflicting
+ceilings fail closed. Unknown charges block new reservations across restarts.
+Connections must be idle; lock timeouts and duplicate IDs propagate without
+admitting a call. Legacy ledgers pin their ceiling on first upgraded open and
+reject commitments above that ceiling. Ceiling changes and unknown-charge
+reconciliation require future explicit operator tooling. Separate database files
+are separate budgets; this is not a distributed or tamper-resistant ledger.
+
+This focused dependency enables no provider execution and retains the $0 default.
+Next: version-pinned provider contracts, verified pricing, explicit opt-in,
+redacted request/response artifacts and invocation/settlement lifecycle tests,
+before native Inspect AI/AgentDojo execution with independently witnessed effects.
+Synthetic acceptance establishes no real-model security result.

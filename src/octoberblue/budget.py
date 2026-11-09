@@ -1,5 +1,6 @@
-"""Local single-connection hard-cap prototype; no actual API calls."""
+"""SQLite reservations serialized across connections; no actual API calls."""
 
+from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
 
 
@@ -21,11 +22,37 @@ class Budget:
     def __init__(self, conn, ceiling="0.00"):
         self.conn = conn
         self.ceiling = amount(ceiling)
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS spend (id TEXT PRIMARY KEY, reserved TEXT NOT NULL, "
-            "actual TEXT, state TEXT NOT NULL)"
-        )
-        conn.commit()
+        with self._transaction():
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS spend (id TEXT PRIMARY KEY, reserved TEXT NOT NULL, "
+                "actual TEXT, state TEXT NOT NULL)"
+            )
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS spend_policy "
+                "(id INTEGER PRIMARY KEY CHECK(id=1), ceiling TEXT NOT NULL)"
+            )
+            conn.execute(
+                "INSERT OR IGNORE INTO spend_policy VALUES (1,?)", (str(self.ceiling),)
+            )
+            stored = conn.execute("SELECT ceiling FROM spend_policy WHERE id=1").fetchone()[0]
+            if amount(stored) != self.ceiling:
+                raise ValueError("ledger ceiling mismatch")
+            if self.committed() > self.ceiling:
+                raise BudgetExceeded("existing commitments exceed ceiling")
+
+    @contextmanager
+    def _transaction(self):
+        # Acquire the writer lock before reading any balance or reservation state.
+        # Never commit unrelated caller work, including on autocommit connections.
+        if self.conn.in_transaction:
+            raise ValueError("budget requires an idle connection")
+        self.conn.execute("BEGIN IMMEDIATE")
+        try:
+            yield
+            self.conn.commit()
+        except BaseException:
+            self.conn.rollback()
+            raise
 
     def committed(self):
         return sum(
@@ -41,7 +68,9 @@ class Budget:
 
     def reserve(self, key, upper_bound):
         v = amount(upper_bound)
-        with self.conn:
+        with self._transaction():
+            if self.conn.execute("SELECT 1 FROM spend WHERE state='unknown' LIMIT 1").fetchone():
+                raise BudgetExceeded("unknown charge; operator reconciliation required")
             if self.committed() + v > self.ceiling:
                 raise BudgetExceeded("hard cap exceeded")
             self.conn.execute(
@@ -50,7 +79,7 @@ class Budget:
 
     def settle(self, key, actual):
         v = amount(actual)
-        with self.conn:
+        with self._transaction():
             row = self.conn.execute(
                 "SELECT reserved,state FROM spend WHERE id=?", (key,)
             ).fetchone()
