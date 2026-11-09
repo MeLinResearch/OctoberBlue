@@ -7,14 +7,18 @@
       "id": "D13",
       "name": "provider_admission_contracts",
       "origin": "Operator-reviewed model pins and pricing records",
-      "use": "Offline identity/pricing admission and exact cost bounds; no provider transport",
+      "use": "Pinned identity, reviewed pricing, exact cost bounds and host-owned dispatch",
       "rights": "MIT, authored",
       "consent": "not_applicable_synthetic_or_authored",
       "human_records": false,
       "files": [
         {
           "path": "src/octoberblue/provider_contracts.py",
-          "sha256": "7b2f4e920cf3c9b5dffc94e079104ae23eb4c2e98bb2ef47fb220427c468c9d3"
+          "sha256": "fde3ab0fd869df6f18ff3176520ae9952aef3c3f246295cae0e59a1c7cc8ab50"
+        },
+        {
+          "path": "src/octoberblue/provider_invocation.py",
+          "sha256": "d137c70a797ad5537696a1061dc3cec3c40f01f272362af921037c4f09791fdb"
         },
         {
           "path": "schemas/model-pin.v1.json",
