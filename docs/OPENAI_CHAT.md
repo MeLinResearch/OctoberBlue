@@ -46,3 +46,23 @@ perform no automatic retries. Keep credentials out of payloads, public artifacts
 process arguments and error strings. Return raw output only to trusted callers;
 export content-free call records. Authored fixtures establish wire behavior,
 not provider availability, verified prices or real-model security.
+
+
+### Fixed-endpoint worker transport
+
+Construct `OpenAIHTTPTransport(budget, "run_id:call_id", api_key)` only in trusted
+host code and pass it as the adapter's `send` callable. Supply independently
+reviewed model/pricing digests and explicit opt-in to `invoke_provider`; preserve
+the $0 default. Use a matching in-flight journal manifest, full-context input
+bound and exact payload fingerprint. Persist the single-send latch before worker
+launch; never reuse a call ID even after a timeout or through a new sender object.
+
+Deliver the key and body over private stdin, never argv, environment or temp
+files. Run isolated Python in a private cwd with only system/temp, proxy and CA
+variables. Trust those host proxy/CA settings; retain TLS verification. Fix the
+endpoint to `https://api.openai.com/v1/chat/completions`. Reject redirects, retries,
+non-JSON/non-200 responses and compressed bodies. Bound worker stdout and body
+at 1 MB, stderr at 1 KiB and total worker lifetime (including DNS, TLS, stalled
+writes and slow reads) at the configured deadline, at most 120 seconds. Allow
+cleanup time after cancellation. Review transport/worker dependencies alongside
+the profile; its source-file pin alone is not a dependency closure or OS sandbox.

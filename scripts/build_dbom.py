@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 RIGHTS = "MIT, authored"
 
 ASSETS = [
+    ("D15", "provider_http_transport", "Authored budget-gated fixed-endpoint provider transport",
+     "Private credential pipes, durable single-send latch, HTTPS and bounded worker lifetime",
+     ["src/octoberblue/openai_transport.py", "src/octoberblue/provider_http_worker.py"]),
     ("D14", "openai_chat_profile", "Authored snapshot-pinned text-only wire adapter",
      "Complete-context reservation bound, fixed request modes and provider metadata validation",
      ["src/octoberblue/openai_chat.py"]),

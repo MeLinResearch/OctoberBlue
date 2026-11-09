@@ -183,3 +183,14 @@ settled afterward. Model/tier/usage mismatches fail closed. Twenty authored
 fixture tests exercise this profile through an injected offline transport.
 Next dependency: credential-safe fixed-endpoint transport with hard deadlines,
 response caps and no redirects/retries. No paid API calls have been made.
+
+### Budget-gated bounded HTTPS transport
+
+The fixed-endpoint transport now requires a matching inflight call manifest and
+persists a one-send-per-call latch before launching an isolated Python worker.
+Credentials use private stdin; proxy/CA variables are allowlisted. TLS checks,
+redirect rejection, response caps and a parent-enforced total deadline bound
+provider I/O without retries. Offline HTTP doubles and local stalled workers
+exercise the coordinator/transport path; no provider calls have been made.
+Next: native Inspect AI/AgentDojo task execution with independently witnessed
+tool effects, retaining explicit operator opt-in and the $0 default.
