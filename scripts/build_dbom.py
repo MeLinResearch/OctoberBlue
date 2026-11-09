@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 RIGHTS = "MIT, authored"
 
 ASSETS = [
+    ("D14", "openai_chat_profile", "Authored snapshot-pinned text-only wire adapter",
+     "Complete-context reservation bound, fixed request modes and provider metadata validation",
+     ["src/octoberblue/openai_chat.py"]),
     ("D13", "provider_admission_contracts", "Operator-reviewed model pins and pricing records",
      "Pinned identity, reviewed pricing, exact cost bounds and host-owned dispatch",
      ["src/octoberblue/provider_contracts.py", "src/octoberblue/provider_invocation.py",
