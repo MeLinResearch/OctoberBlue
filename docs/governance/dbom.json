@@ -4,6 +4,33 @@
   "human_records": false,
   "assets": [
     {
+      "id": "D13",
+      "name": "provider_admission_contracts",
+      "origin": "Operator-reviewed model pins and pricing records",
+      "use": "Offline identity/pricing admission and exact cost bounds; no provider transport",
+      "rights": "MIT, authored",
+      "consent": "not_applicable_synthetic_or_authored",
+      "human_records": false,
+      "files": [
+        {
+          "path": "src/octoberblue/provider_contracts.py",
+          "sha256": "7b2f4e920cf3c9b5dffc94e079104ae23eb4c2e98bb2ef47fb220427c468c9d3"
+        },
+        {
+          "path": "schemas/model-pin.v1.json",
+          "sha256": "26a41f3699ce52cb5fade512625dd2c64b98e719b59d38832cb5ad63d25a60c7"
+        },
+        {
+          "path": "schemas/price-quote.v1.json",
+          "sha256": "a04584c6d93c4b6a2d6f7fa88a694d31e115878d8c31aba7f262b9f81ab68e6d"
+        },
+        {
+          "path": "schemas/provider-call-request.v1.json",
+          "sha256": "9707b8378771dcc354b27e4f66cfdb4be8c0a1614da2d4f9837e073735a643b8"
+        }
+      ]
+    },
+    {
       "id": "D12",
       "name": "contained_ticket_acceptance",
       "origin": "Authored fixed-worker boundary and acceptance gate",
@@ -197,7 +224,7 @@
         },
         {
           "path": "scripts/build_service_schemas.py",
-          "sha256": "ff1f0fd64dd4c3c44fb928a96f2f5f1397ffc9e404ea4567d2568d21acc5f7d7"
+          "sha256": "952bf0c8e19e5bfa26bbb31f2e8f1d1e0cfcaa40f72cc1f274a6c1f1b594b6aa"
         },
         {
           "path": "schemas/run-request.v1.json",

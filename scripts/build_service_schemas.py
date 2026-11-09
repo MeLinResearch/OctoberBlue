@@ -2,6 +2,16 @@
 import json
 from pathlib import Path
 
+from octoberblue.provider_contracts import (
+    ADAPTER_VERSION,
+    IDENTITY,
+    MAX_TOKENS,
+    MONEY,
+    REVISION,
+    ROLES,
+    SHA,
+)
+
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = "octoberblue:"
 
@@ -164,8 +174,39 @@ def build():
             "witness-request": witness, "witness-response": response}
 
 
+def provider_schemas():
+    def text(pattern):
+        return {"type": "string", "pattern": "^" + pattern + "$"}
+
+    version = {"const": "1.0"}
+    sha = text(SHA)
+    pin = obj({"schema_version": version, "provider_id": text(IDENTITY),
+               "model_id": text(IDENTITY), "model_revision": text(REVISION),
+               "adapter_id": text(IDENTITY), "adapter_version": text(ADAPTER_VERSION),
+               "adapter_sha256": sha})
+    quote = obj({"schema_version": version, "model_pin_sha256": sha,
+                 "currency": {"const": "USD"},
+                 "billing_basis": {"const": "all_input_all_output_tokens"},
+                 "input_dollars_per_million": text(MONEY),
+                 "output_dollars_per_million": text(MONEY),
+                 "source_url": {"type": "string", "minLength": 1, "maxLength": 2048},
+                 "source_sha256": sha, "reviewed_by": text(IDENTITY),
+                 "verified_at": {"type": "integer", "minimum": 1, "maximum": 253402300799},
+                 "expires_at": {"type": "integer", "minimum": 1, "maximum": 253402300799}})
+    request = obj({"schema_version": version,
+                   "run_id": text(r"[A-Za-z0-9][A-Za-z0-9_-]{0,95}"),
+                   "call_id": text(r"[A-Za-z0-9][A-Za-z0-9_-]{0,95}"),
+                   "role": {"enum": list(ROLES)},
+                   "model_pin_sha256": sha, "price_quote_sha256": sha,
+                   "input_tokens_upper_bound": {"type": "integer", "minimum": 0,
+                                                "maximum": MAX_TOKENS},
+                   "output_tokens_upper_bound": {"type": "integer", "minimum": 1,
+                                                 "maximum": MAX_TOKENS}})
+    return {"model-pin": pin, "price-quote": quote, "provider-call-request": request}
+
+
 def main():
-    for name, schema in build().items():
+    for name, schema in (build() | provider_schemas()).items():
         value = {"$schema": "https://json-schema.org/draft/2020-12/schema",
                  "$id": PREFIX + name + ":v1", "title": name + " v1", **schema}
         (ROOT / "schemas" / (name + ".v1.json")).write_bytes(

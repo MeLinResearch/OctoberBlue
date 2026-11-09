@@ -132,3 +132,18 @@ Next: version-pinned provider contracts, verified pricing, explicit opt-in,
 redacted request/response artifacts and invocation/settlement lifecycle tests,
 before native Inspect AI/AgentDojo execution with independently witnessed effects.
 Synthetic acceptance establishes no real-model security result.
+
+### Phase 2 provider-contract prerequisite (November 9, 2026)
+
+Strict model pins, operator-reviewed expiring price quotes and provider-call
+requests now have immutable runtime contracts and generated wire schemas.
+Offline admission checks externally retained approval digests, explicit opt-in,
+quote freshness, identity bindings and exact token-based USD bounds with a $0
+default. This does not invoke providers or reserve spend. See
+[provider contracts and operator trust](PROVIDER_CONTRACTS.md).
+
+Next: a host-owned invocation lifecycle that counts the actual payload, reserves
+before dispatch, settles or freezes unknown charges, redacts artifacts and pins
+identities in live manifests, followed by a concrete version-pinned adapter and
+native Inspect AI/AgentDojo execution with independently witnessed effects.
+Paid calls still require explicit approval; no real-model security result exists.
