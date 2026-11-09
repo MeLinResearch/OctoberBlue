@@ -249,3 +249,9 @@ fixed standard-tier text request modes, full-context input reservation, exact
 provider usage checks and content-free journal integration. These are authored
 wire fixtures, not live-model security or live pricing evidence. Transport and
 credential handling are a separate dependency; the $0 default remains in force.
+
+INV-17/18 transport coverage adds `tests/test_openai_transport.py`: credential
+isolation, fixed destination and redirect rejection, full-lifetime deadline,
+response caps, durable single-send latch and coordinator freeze on uncertainty.
+These are offline transport tests; real-provider availability and security are
+unmeasured, and operator-reviewed pricing/explicit paid-call approval are required.
