@@ -171,3 +171,15 @@ Raw request/response content is excluded; hashes prove local consistency only.
 Next: a concrete version-pinned provider adapter with reviewed token counting,
 request limits and bounded transport, then native Inspect AI/AgentDojo execution
 with independently witnessed tool effects. No paid calls have been made.
+
+### Pinned text-only Chat Completions wire adapter
+
+The OpenAI wire adapter pins `gpt-5.4-mini-2026-03-17` and restricts requests to
+one non-streaming, unstored, default-tier text completion without native tools.
+It reserves the documented 400,000-token context as its complete input upper
+bound rather than guessing a tokenizer/framing estimate. This conservative
+reservation can reject otherwise affordable requests; actual metadata usage is
+settled afterward. Model/tier/usage mismatches fail closed. Twenty authored
+fixture tests exercise this profile through an injected offline transport.
+Next dependency: credential-safe fixed-endpoint transport with hard deadlines,
+response caps and no redirects/retries. No paid API calls have been made.

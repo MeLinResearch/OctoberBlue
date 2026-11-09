@@ -241,3 +241,11 @@ retained evidence](PHASE1_ACCEPTANCE.md). INV-04/05/12/15/16/18 are additionally
 exercised by the matrix, guard-off gateway-denial control, frozen manifests,
 authenticated tool decisions and zero-model execution. These scoped checks do
 not upgrade the historical v0.1 invariant table or future real-agent requirements.
+
+### Provider wire-profile coverage
+
+INV-09/17/18 now additionally have `tests/test_openai_chat.py`: a dated model pin,
+fixed standard-tier text request modes, full-context input reservation, exact
+provider usage checks and content-free journal integration. These are authored
+wire fixtures, not live-model security or live pricing evidence. Transport and
+credential handling are a separate dependency; the $0 default remains in force.
